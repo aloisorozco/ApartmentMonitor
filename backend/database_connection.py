@@ -20,10 +20,9 @@ def create_user(fname, lname, email, password_hashed):
 # Function to create an apartment listing
 def create_apartment(price, location, description):
     apartment_ref = db.collection('apartments').add({
-        "price": price,
-        "location": location,
-        "description": description,
-        "createdAt": firestore.SERVER_TIMESTAMP
+            "price": 0,
+            "price_target": 0,
+            "description": ""
     })
     return apartment_ref[1].id  # Returns the generated listing ID
 
