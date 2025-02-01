@@ -141,10 +141,11 @@ class Server():
         response.status_code = 200
         return response
 
-    @app.route('/db_api/auth_user', methods=['GET'])
+    @app.route('/db_api/auth_user', methods=['POST'])
     def auth_user():
-        password = request.args.get('password')
-        email = request.args.get('email')
+        data = request.get_json()
+        password = data.get('password')
+        email = data.get('email')
 
         enterred_password = Server.hash_data(password)
         enterred_email = Server.hash_data(email)
