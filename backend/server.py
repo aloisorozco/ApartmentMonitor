@@ -61,32 +61,36 @@ class Server():
 
     @app.route('/db_api/save_listing', methods=['POST'])
     def save_listing():
-        email = request.form.get('email')
+        listing_data = request.get_json()
+        email = listing_data.get('email')
         email_hash = Server.hash_data(email)
 
-        price_curr = request.form.get('curr_price')
-        pirce_target = request.form.get('target_price')
-        desc = request.form.get('desc')
+        price_curr = listing_data.get('curr_price')
+        pirce_target = listing_data.get('target_price')
+        desc = listing_data.get('desc')
 
         listing_id = uuid.uuid4().__str__()
 
-        watchlist_ref = Server.db.collection('users').document(
-            email_hash).collection('watchlist')
-        watchlist_ref.document(listing_id).set({
-            "addedAt": time.time()
-        })
+        watchlist_ref = Server.db.collection('users').document(email_hash).collection('watchlist')
+        user_listing = watchlist_ref.document(listing_id).get()
+        if user_listing.exists:
+            response = jsonify({"error":"what you tryna do, one time is more than enough, bitch trying to add same listing multiple times"})
+        else:
+            watchlist_ref.document(listing_id).set({
+                "addedAt": time.time()
+            })
 
-        listing_docref = Server.db.collection(
-            'apartments').document(listing_id)
-        listing_docref.set({
-            "price": price_curr,
-            "price_target": pirce_target,
-            "description": desc
-        })
+            listing_docref = Server.db.collection(
+                'apartments').document(listing_id)
+            listing_docref.set({
+                "price": price_curr,
+                "price_target": pirce_target,
+                "description": desc
+            })
 
-        response = jsonify({"ok": "listing saved"})
-        response.status_code = 200
-        return response
+            response = jsonify({"ok": "listing saved"})
+            response.status_code = 200
+            return response
 
     @app.route('/db_api/remove_listing', methods=['DELETE'])
     def remove_listing():
@@ -106,7 +110,6 @@ class Server():
     @app.route('/db_api/register_user', methods=['POST'])
     def register_user():
         form_data = request.get_json()
-        print(form_data)
         fname = form_data.get('fname')
         lname = form_data.get('lname')
         pword = form_data.get('password')
