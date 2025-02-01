@@ -61,7 +61,7 @@ class Server():
 
     @app.route('/db_api/save_listing', methods=['POST'])
     def save_listing():
-        email = request.form.get('fname')
+        email = request.form.get('email')
         email_hash = Server.hash_data(email)
 
         price_curr = request.form.get('curr_price')
@@ -90,7 +90,7 @@ class Server():
 
     @app.route('/db_api/remove_listing', methods=['DELETE'])
     def remove_listing():
-        email = request.args.get('fname')
+        email = request.args.get('email')
         email_hash = Server.hash_data(email)
         listing_id = request.args.get('listing_id')
 
