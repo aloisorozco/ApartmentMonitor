@@ -1,3 +1,6 @@
 frontend/node_modules
 frontend/package-lock.json
 /backend/scraping
+backend/__pycache__/server.cpython-313.pyc
+backend/cred.json
+backend/__pycache__/server.cpython-313.pyc
