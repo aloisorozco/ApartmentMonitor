@@ -24,7 +24,12 @@ const Login = () => {
       height="100vh"
       bgcolor="#f5f5f5"
     >
-      <Paper elevation={3} sx={{ padding: 3, width: 300 }}>
+      <Paper elevation={3} sx={{ padding: 4,
+          width: 400,
+          borderRadius: 3,
+          boxShadow: 3,
+          bgcolor: 'white',
+          textAlign: 'center' }}>
         <Typography variant="h5" align="center" gutterBottom>
           Login
         </Typography>
