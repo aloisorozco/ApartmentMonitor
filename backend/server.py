@@ -55,7 +55,7 @@ class Server():
 
     @app.route('/db_api/save_listing', methods=['POST'])
     def save_listing():
-        email = request.form.get('fname')
+        email = request.form.get('email')
         email_hash = Server.hash_data(email)
 
         price_curr = request.form.get('curr_price')
@@ -82,7 +82,7 @@ class Server():
 
     @app.route('/db_api/remove_listing', methods=['DELETE'])
     def remove_listing():
-        email = request.args.get('fname')
+        email = request.args.get('email')
         email_hash = Server.hash_data(email)
         listing_id = request.args.get('listing_id')
 
@@ -145,7 +145,7 @@ class Server():
             return response
         
         user_info = user_db.to_dict()
-        password_db = user_info.get(password, "There was an error")
+        password_db = user_info.get("password_hashed")
         if(enterred_password != password_db):
             response = jsonify({"error": "Password Invalid"})
             response.status_code = 400
