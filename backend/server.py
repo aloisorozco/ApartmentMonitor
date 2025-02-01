@@ -11,46 +11,52 @@ class Server():
     # letting flask know that all stuff it needs is in this dir
     app = Flask(__name__)
     CORS(app)
+    cred: credentials.Certificate = credentials.Certificate("cred.json")
+    firebase_admin.initialize_app(cred)
+    db = firestore.client()
 
-    def __init__(self, cred) -> None:
-        self.cred: credentials.Certificate = cred
-        firebase_admin.initialize_app(cred)
-        self.db = firestore.client()
     
     def hash_data(data):
         return hashlib.sha256(data.encode()).hexdigest()
 
     # todo
     @app.route('/db_api/send_msgd', methods=['GET'])
-    def send_msgd(self):
-        pass
+    def send_msgd():
+        response = jsonify({})
+        response.status_code = 200 
+        return response
 
     # todo
     @app.route('/db_api/send_email', methods=['GET'])
-    def send_email(self):
-        pass
+    def send_email():
+        response = jsonify({})
+        response.status_code = 200 
+        return response
 
     # todo
     @app.route('/db_api/update_listing', methods=['GET'])
-    def update_listing(self):
-        pass
+    def update_listing():
+        response = jsonify({})
+        response.status_code = 200 
+        return response
         
     @app.route('/db_api/fetch_watchlist', methods=['GET'])
-    def fetch_watchlist(self):
+    def fetch_watchlist():
         email = request.form.get('email')
-        email_hash = self.hash_data(email)
-        wtachlist = self.db.collection('users').document(email_hash).collection('watchlist').get()
+        email_hash = Server.hash_data(email)
+        wtachlist = Server.db.collection('users').document(email_hash).collection('watchlist').get()
+        response = jsonify({})
+        response.status_code = 200
 
         if wtachlist.exists:
-            return jsonify(wtachlist.to_dict())
-        else:
-            return jsonify({})
+            response =  jsonify(wtachlist.to_dict())
         
+        return response
 
     @app.route('/db_api/save_listing', methods=['POST'])
-    def save_listing(self):
+    def save_listing():
         email = request.form.get('fname')
-        email_hash = self.hash_data(email)
+        email_hash = Server.hash_data(email)
 
         price_curr = request.form.get('curr_price')
         pirce_target = request.form.get('target_price')
@@ -58,41 +64,49 @@ class Server():
 
         listing_id = uuid.uuid4()
 
-        watchlist_ref = self.db.collection('users').document(email_hash).collection('watchlist')
+        watchlist_ref = Server.db.collection('users').document(email_hash).collection('watchlist')
         watchlist_ref.document(listing_id).set({
             "addedAt": time.time()
         })
 
-        listing_docref = self.db.collection('apartments').document(listing_id)
+        listing_docref = Server.db.collection('apartments').document(listing_id)
         listing_docref.set({
             "price": price_curr,
             "price_target": pirce_target,
             "description": desc
         })
 
+        response = jsonify({"ok": "listing saved"})
+        response.status_code = 200
+        return response
+
     @app.route('/db_api/remove_listing', methods=['DELETE'])
-    def remove_listing(self):
+    def remove_listing():
         email = request.form.get('fname')
-        email_hash = self.hash_data(email)
+        email_hash = Server.hash_data(email)
         listing_id = request.form.get('listing_id')
 
-        watchlist_ref = self.db.collection('users').document(email_hash).collection('watchlist')
+        watchlist_ref = Server.db.collection('users').document(email_hash).collection('watchlist')
         watchlist_ref.document(listing_id).delete()
-        self.db.collection('apartments').document(listing_id).delete()
+        Server.db.collection('apartments').document(listing_id).delete()
+
+        response = jsonify({"ok": "listing removed"})
+        response.status_code = 200
+        return response
 
     @app.route('/db_api/register_user', methods=['POST'])
-    def register_user(self):
+    def register_user():
         fname = request.form.get('fname')
         lname = request.form.get('lname')
         pword = request.form.get('password')
 
         # use the email as unqiue ID
         email = request.form.get('email')
-        email_encr = self.hash_data(email) 
-        password_encr = self.hash_data(pword)
+        email_encr = Server.hash_data(email) 
+        password_encr = Server.hash_data(pword)
 
         # make sure email is not in the firebase db based on hash here
-        email_docref = self.db.collection('users').document(email_encr)
+        email_docref = Server.db.collection('users').document(email_encr)
 
         doc = email_docref.get()
 
@@ -111,15 +125,19 @@ class Server():
             "createdAt": time.time()
         })
 
+        response = jsonify({"ok": "user registered"})
+        response.status_code = 200
+        return response
+
 
     @app.route('/db_api/auth_user', methods=['GET'])
-    def auth_user(self):
+    def auth_user():
         password = request.form.get('password')
         email = request.form.get('email')
 
-        enterred_password = self.hash_data(password)
-        enterred_email = self.hash_data(email)
-        user_db = self.db.collection("users").document(enterred_email).get()
+        enterred_password = Server.hash_data(password)
+        enterred_email = Server.hash_data(email)
+        user_db = Server.db.collection("users").document(enterred_email).get()
 
         if not user_db.exists:
             response = jsonify({"error": "User does not exist or provided information is wrong"})
@@ -133,3 +151,6 @@ class Server():
             response.status_code = 400
             return response
 
+        response = jsonify({"ok": "user authed"})
+        response.status_code = 200
+        return response
