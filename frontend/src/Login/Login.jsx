@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { TextField, Button, Box, Typography, Paper } from '@mui/material';
 import { Link } from 'react-router-dom';
+import PrivateRoute from '../PrivateRoute';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -8,11 +9,28 @@ const Login = () => {
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    setEmail("");
-    setPassword("");
-    console.log('Email:', email);
-    console.log('Password:', password);
-  };
+    
+    fetch(
+      "http://localhost:5500/db_api/auth_user",
+      {
+        method: "POST",
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: email,
+          password: password,
+        })
+      }
+    );
+};
+//     .then(response => {
+//         console.log("success")
+//         return <PrivateRoute response={response} />
+//    })
+//     .catch(error => {
+//       console.log(error)
+//     })};
 
   return (
     <Box

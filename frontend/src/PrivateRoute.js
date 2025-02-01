@@ -1,7 +1,7 @@
 import React from 'react';
 import { Navigate, Outlet } from 'react-router-dom';
 
-const PrivateRoute = () => {
+const PrivateRoute = ({response}) => {
     const auth = null; // determine if authorized, from context or however you're doing it
 
     // If authorized, return an outlet that will render child elements
