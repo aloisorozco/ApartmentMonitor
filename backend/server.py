@@ -5,6 +5,9 @@ import firebase_admin
 from firebase_admin import credentials, firestore
 
 class Server():
+    
+    def hash_data(data):
+        return hashlib.sha256(data.encode()).hexdigest()
 
     # letting flask know that all stuff it needs is in this dir
     app = Flask(__name__)
@@ -35,8 +38,8 @@ class Server():
 
         # use the email as unqiue ID
         email = request.form.get('email')
-        email_encr = hash_data(email) 
-        password_encr = hash_data(pword)
+        email_encr = self.hash_data(email) 
+        password_encr = self.hash_data(pword)
 
         # make sure email is not in the firebase db based on hash here
         email_ref = self.db.collection('users')
@@ -48,5 +51,19 @@ class Server():
 
 
     @app.route('/db_api/auth_user', methods=['GET'])
-    def auth_user(self):
-        pass
+    def auth_user(self, password, email):
+        enterred_password = self.hash_data(password)
+        enterred_email = self.hash_data(email)
+        user_db = self.db.collection("users").document(enterred_email).get()
+
+        if not user_db.exists:
+            print("User does not exist or provided information is wrong")
+            return False
+        
+        user_info = user_db.to_dict()
+        password_db = user_info.get(password, "There was an error")
+        if(enterred_password == password_db):
+            return True
+        else:
+            print("Password is invalid")
+            return False
