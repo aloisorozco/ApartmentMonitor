@@ -11,11 +11,37 @@ const Register = () => {
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    // Handle form submission (e.g., validation, API call, etc.)
-    setEmail("")
-    setPassword("")
-    console.log('Email:', email);
-    console.log('Password:', password);
+    
+    fetch(
+      "http://localhost:5500/db_api/register_user",
+      {
+        method: "POST",
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: email,
+          password: password,
+          fname: firstName,
+          lname: lastName
+        })
+      }
+    )
+    .then(response => response.json())
+    .then(data => {
+      // Handle the response data here  
+
+      setEmail("")
+      setPassword("")
+      setFirstName("")
+      setLastName("")
+      console.log("success")
+    })
+    .catch(error => {
+      console.log(error)
+    });
+    
+
   };
 
   return (
