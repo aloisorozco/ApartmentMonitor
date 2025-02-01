@@ -1,13 +1,19 @@
 import React, { useState } from 'react';
 import { TextField, Button, Box, Typography, Paper } from '@mui/material';
 
-const SignIn = () => {
+
+
+const Register = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
 
   const handleSubmit = (event) => {
     event.preventDefault();
     // Handle form submission (e.g., validation, API call, etc.)
+    setEmail("")
+    setPassword("")
     console.log('Email:', email);
     console.log('Password:', password);
   };
@@ -22,9 +28,27 @@ const SignIn = () => {
     >
       <Paper elevation={3} sx={{ padding: 3, width: 300 }}>
         <Typography variant="h5" align="center" gutterBottom>
-          Login
+          Register
         </Typography>
         <form onSubmit={handleSubmit}>
+        <TextField
+            label="First Name"
+            type="firstName"
+            variant="outlined"
+            fullWidth
+            margin="normal"
+            value={firstName}
+            onChange={(e) => setFirstName(e.target.value)}
+          />
+          <TextField
+            label="Last Name"
+            type="lastName"
+            variant="outlined"
+            fullWidth
+            margin="normal"
+            value={lastName}
+            onChange={(e) => setLastName(e.target.value)}
+          />
           <TextField
             label="Email"
             type="email"
@@ -58,4 +82,4 @@ const SignIn = () => {
   );
 };
 
-export default SignIn;
+export default Register;
