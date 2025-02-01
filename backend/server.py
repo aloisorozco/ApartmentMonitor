@@ -105,12 +105,14 @@ class Server():
 
     @app.route('/db_api/register_user', methods=['POST'])
     def register_user():
-        fname = request.form.get('fname')
-        lname = request.form.get('lname')
-        pword = request.form.get('password')
+        form_data = request.get_json()
+        print(form_data)
+        fname = form_data.get('fname')
+        lname = form_data.get('lname')
+        pword = form_data.get('password')
 
         # use the email as unqiue ID
-        email = request.form.get('email')
+        email = form_data.get('email')
         email_encr = Server.hash_data(email)
         password_encr = Server.hash_data(pword)
 
