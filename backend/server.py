@@ -42,7 +42,7 @@ class Server():
         
     @app.route('/db_api/fetch_watchlist', methods=['GET'])
     def fetch_watchlist():
-        email = request.form.get('email')
+        email = request.args.get('email')
         email_hash = Server.hash_data(email)
         wtachlist = Server.db.collection('users').document(email_hash).collection('watchlist').get()
         response = jsonify({})
@@ -62,7 +62,7 @@ class Server():
         pirce_target = request.form.get('target_price')
         desc = request.form.get('desc')
 
-        listing_id = uuid.uuid4()
+        listing_id = uuid.uuid4().__str__()
 
         watchlist_ref = Server.db.collection('users').document(email_hash).collection('watchlist')
         watchlist_ref.document(listing_id).set({
@@ -82,9 +82,9 @@ class Server():
 
     @app.route('/db_api/remove_listing', methods=['DELETE'])
     def remove_listing():
-        email = request.form.get('fname')
+        email = request.args.get('fname')
         email_hash = Server.hash_data(email)
-        listing_id = request.form.get('listing_id')
+        listing_id = request.args.get('listing_id')
 
         watchlist_ref = Server.db.collection('users').document(email_hash).collection('watchlist')
         watchlist_ref.document(listing_id).delete()
@@ -132,8 +132,8 @@ class Server():
 
     @app.route('/db_api/auth_user', methods=['GET'])
     def auth_user():
-        password = request.form.get('password')
-        email = request.form.get('email')
+        password = request.args.get('password')
+        email = request.args.get('email')
 
         enterred_password = Server.hash_data(password)
         enterred_email = Server.hash_data(email)
