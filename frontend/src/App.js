@@ -1,23 +1,28 @@
-import logo from './logo.svg';
+import React from 'react'
+
 import './App.css';
+import Login from './Login/Login'
+import HeaderComponent from './HeaderComponent';
+import MonitorPage from './MonitorPage/MonitorPage';
+import Register from './Login/Register';
+import PrivateRoute from './PrivateRoute'
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 
 function App() {
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Gamblers.inc
-        </a>
-      </header>
+      <HeaderComponent />
+      <Router>
+        <Routes>
+        <Route exact path='/' element={<PrivateRoute/>}>
+            <Route exact path='/' element={<MonitorPage/>}/>
+        </Route>
+        <Route exact path='/login' element={<Login/>}/>
+        <Route exact path='/register' element={<Register />} />
+        </Routes>
+
+       
+    </Router>
     </div>
   );
 }
