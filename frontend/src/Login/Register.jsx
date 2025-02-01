@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { TextField, Button, Box, Typography, Paper } from '@mui/material';
-
+import { Link } from 'react-router-dom';
 
 
 const Register = () => {
@@ -11,12 +11,35 @@ const Register = () => {
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    // Handle form submission (e.g., validation, API call, etc.)
-    setEmail("")
-    setPassword("")
-    console.log('Email:', email);
-    console.log('Password:', password);
-  };
+    
+    fetch(
+      "http://localhost:5500/db_api/register_user",
+      {
+        method: "POST",
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: email,
+          password: password,
+          fname: firstName,
+          lname: lastName
+        })
+      }
+    )
+    .then(response => response.json())
+    .then(data => {
+      // Handle the response data here  
+
+      setEmail("")
+      setPassword("")
+      setFirstName("")
+      setLastName("")
+      console.log("success")
+    })
+    .catch(error => {
+      console.log(error)
+    })};
 
   return (
     <Box
@@ -25,16 +48,30 @@ const Register = () => {
       alignItems="center"
       height="100vh"
       bgcolor="#f5f5f5"
+      sx={{fontFamily:'Roboto'}}
     >
-      <Paper elevation={3} sx={{ padding: 3, width: 300 }}>
-        <Typography variant="h5" align="center" gutterBottom>
-          Register
+      <Paper
+        elevation={3}
+        sx={{
+          padding: 4,
+          width: 400,
+          borderRadius: 3,
+          boxShadow: 3,
+          bgcolor: 'white',
+          textAlign: 'center',
+        }}
+      >
+        <Typography variant="h4" color="black" fontWeight="bold">
+          Create a new account
+        </Typography>
+        <Typography variant="body1" color="grey" fontWeight="medium">
+          It's quick and easy.
         </Typography>
         <form onSubmit={handleSubmit}>
-        <TextField
+          <TextField
             label="First Name"
             type="firstName"
-            variant="outlined"
+            variant="filled"
             fullWidth
             margin="normal"
             value={firstName}
@@ -43,7 +80,7 @@ const Register = () => {
           <TextField
             label="Last Name"
             type="lastName"
-            variant="outlined"
+            variant="filled"
             fullWidth
             margin="normal"
             value={lastName}
@@ -52,7 +89,7 @@ const Register = () => {
           <TextField
             label="Email"
             type="email"
-            variant="outlined"
+            variant="filled"
             fullWidth
             margin="normal"
             value={email}
@@ -61,21 +98,37 @@ const Register = () => {
           <TextField
             label="Password"
             type="password"
-            variant="outlined"
+            variant="filled"
             fullWidth
             margin="normal"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
-          <Button
-            type="submit"
-            variant="contained"
-            color="primary"
-            fullWidth
-            sx={{ marginTop: 2 }}
-          >
-            Log In
-          </Button>
+
+         <Typography variant="caption" color="grey" fontStyle="oblique"> You may receive SMS Notifications from us and can opt out any time. </Typography>
+
+          <Box sx={{ textAlign: 'center', width: '45%', margin: '0 auto' }}>
+            <Button
+              type="submit"
+              variant="contained"
+              fullWidth
+              sx={{
+                marginTop: 2,
+                backgroundColor: '#00a400',
+                color: 'white',
+                fontWeight: 'bold',
+                borderRadius:'8px'
+              }}
+            >
+              Sign Up
+            </Button>
+
+            <Typography variant="body2" sx={{ marginTop: 2 }}>
+              <Link to={`/login`} underline="hover">
+                Already have an account?{' '}
+              </Link>
+            </Typography>
+          </Box>
         </form>
       </Paper>
     </Box>
