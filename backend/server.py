@@ -5,6 +5,12 @@ from flask_cors import CORS
 import firebase_admin
 import time
 from firebase_admin import credentials, firestore
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+import json
+
+
 
 class Server():
     
@@ -14,28 +20,48 @@ class Server():
     cred: credentials.Certificate = credentials.Certificate("cred.json")
     firebase_admin.initialize_app(cred)
     db = firestore.client()
+    email_address = ""
+    email_password = ""
+
+    with open("C:\\Users\\cszty\\Downloads\\email_cred.json") as f:
+        data = json.load(f)
+        email_address=data[email_address]
+        email_password=data[email_password]
+    
 
     
     def hash_data(data):
         return hashlib.sha256(data.encode()).hexdigest()
 
-    # todo
-    @app.route('/db_api/send_msgd', methods=['GET'])
-    def send_msgd():
-        response = jsonify({})
-        response.status_code = 200 
-        return response
-
-    # todo
+    # todo TO TEST
     @app.route('/db_api/send_email', methods=['GET'])
-    def send_email():
+    def send_email(receiver_email):
+        smtp_server = "smtp.gmail.com"
+        smtp_port = 587  
+        
+        msg = MIMEMultipart()
+        msg["From"] = Server.email_address
+        msg["To"] = receiver_email
+        msg["Subject"] = "Test Email"
+
+        body = "Hello, this is a test email sent using Python."
+        msg.attach(MIMEText(body, "plain"))
+
+
+        mail_server = smtplib.SMTP(smtp_server, smtp_port)
+        mail_server.starttls()  # Upgrade to a secure connection
+        mail_server.login(Server.email_address, Server.email_password)  # Login
+        mail_server.sendmail(Server.email_address, receiver_email, msg.as_string())  # Send email
+
         response = jsonify({})
         response.status_code = 200 
         return response
 
-    # todo
+    # todo TO TEST
     @app.route('/db_api/update_listing', methods=['GET'])
-    def update_listing():
+    def update_listing(listing_id, price):
+        apartment_ref = Server.db.collection("apartments").document(listing_id)
+        apartment_ref.update({"price" : price})
         response = jsonify({})
         response.status_code = 200 
         return response
@@ -44,12 +70,12 @@ class Server():
     def fetch_watchlist():
         email = request.form.get('email')
         email_hash = Server.hash_data(email)
-        wtachlist = Server.db.collection('users').document(email_hash).collection('watchlist').get()
+        watchlist = Server.db.collection('users').document(email_hash).collection('watchlist').get()
         response = jsonify({})
         response.status_code = 200
 
-        if wtachlist.exists:
-            response =  jsonify(wtachlist.to_dict())
+        if watchlist.exists:
+            response =  jsonify(watchlist.to_dict())
         
         return response
 
