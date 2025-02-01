@@ -22,15 +22,14 @@ const Login = () => {
           password: password,
         })
       }
-    );
-};
-//     .then(response => {
-//         console.log("success")
-//         return <PrivateRoute response={response} />
-//    })
-//     .catch(error => {
-//       console.log(error)
-//     })};
+    )
+    .then(response => {
+        console.log(response)
+        return <PrivateRoute response={response} />
+   })
+    .catch(error => {
+      console.log(error)
+    })};
 
   return (
     <Box
