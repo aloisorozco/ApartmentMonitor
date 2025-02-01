@@ -1,11 +1,6 @@
 import React, { useState } from 'react';
 import { TextField, Button, Box, Typography, Paper } from '@mui/material';
-<<<<<<< Updated upstream
-import { Link } from 'react-router-dom'
-
-=======
 import { Link } from 'react-router-dom';
->>>>>>> Stashed changes
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -13,14 +8,8 @@ const Login = () => {
 
   const handleSubmit = (event) => {
     event.preventDefault();
-<<<<<<< Updated upstream
-    // Handle form submission (e.g., validation, API call, etc.)
-    setEmail("")
-    setPassword("")
-=======
     setEmail("");
     setPassword("");
->>>>>>> Stashed changes
     console.log('Email:', email);
     console.log('Password:', password);
   };
@@ -32,12 +21,6 @@ const Login = () => {
       alignItems="center"
       height="100vh"
       bgcolor="#f5f5f5"
-<<<<<<< Updated upstream
-    >
-      <Paper elevation={3} sx={{ padding: 3, width: 300 }}>
-        <Typography variant="h5" align="center" gutterBottom>
-          Login
-=======
       sx={{fontFamily:'Roboto'}}
     >
       <Paper
@@ -53,17 +36,12 @@ const Login = () => {
       >
         <Typography variant="h5" color="black" sx={{paddingBottom:'5px'}}>
           Log into Appartment Monitor
->>>>>>> Stashed changes
         </Typography>
         <form onSubmit={handleSubmit}>
           <TextField
             label="Email"
             type="email"
-<<<<<<< Updated upstream
-            variant="outlined"
-=======
             variant="filled"
->>>>>>> Stashed changes
             fullWidth
             margin="normal"
             value={email}
@@ -72,40 +50,12 @@ const Login = () => {
           <TextField
             label="Password"
             type="password"
-<<<<<<< Updated upstream
-            variant="outlined"
-=======
             variant="filled"
->>>>>>> Stashed changes
             fullWidth
             margin="normal"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
-<<<<<<< Updated upstream
-          <Button
-            type="submit"
-            variant="contained"
-            color="primary"
-            fullWidth
-            sx={{ marginTop: 2 }}
-          >
-            Log In
-          </Button>
-        </form>
-
-        <Box sx={{ textAlign: 'center', marginTop: 2 }}>
-          <Typography variant="body2">
-            Don't have an account?{' '}
-            <Link to={`/register`} underline="hover">
-              Register Now
-            </Link>
-          </Typography>
-        </Box>
-
-        
-
-=======
 
           <Box sx={{ textAlign: 'center', width: '45%', margin: '0 auto' }}>
             <Button
@@ -130,7 +80,6 @@ const Login = () => {
             </Typography>
           </Box>
         </form>
->>>>>>> Stashed changes
       </Paper>
     </Box>
   );
