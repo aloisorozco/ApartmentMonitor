@@ -161,7 +161,7 @@ class Server():
             return response
 
         user_info = user_db.to_dict()
-        password_db = user_info.get(password, "There was an error")
+        password_db = user_info.get("password_hashed", "There was an error")
         if (enterred_password != password_db):
             response = jsonify({"error": "Password Invalid"})
             response.status_code = 400
