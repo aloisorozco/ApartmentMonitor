@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { TextField, Button, Box, Typography, Paper } from '@mui/material';
-import { Link } from 'react-router-dom';
-import PrivateRoute from '../PrivateRoute';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../AuthContext';
 
 const Login = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+    const { login } = useAuth();
+    const navigate = useNavigate();
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
 
   const handleSubmit = (event) => {
     event.preventDefault();
@@ -25,7 +27,9 @@ const Login = () => {
     )
     .then(response => {
         console.log(response)
-        return <PrivateRoute response={response} />
+        login();
+        navigate('/');
+        
    })
     .catch(error => {
       console.log(error)
