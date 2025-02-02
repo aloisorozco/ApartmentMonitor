@@ -25,9 +25,9 @@ class Server():
 
     with open("C:\\Users\\cszty\\Downloads\\email_cred.json") as f:
         data = json.load(f)
-        email_address=data[email_address]
-        email_password=data[email_password]
-    
+        email_address=data['email_address']
+        email_password=data['email_password']
+        
 
     
     def hash_data(data):
@@ -36,6 +36,8 @@ class Server():
     # todo TO TEST
     @app.route('/db_api/send_email', methods=['GET'])
     def send_email(receiver_email):
+        print(Server.email_address)
+        print(Server.email_password)
         smtp_server = "smtp.gmail.com"
         smtp_port = 587  
         
@@ -44,7 +46,7 @@ class Server():
         msg["To"] = receiver_email
         msg["Subject"] = "Test Email"
 
-        body = "Hello, this is a test email sent using Python."
+        body = "A Listing in your WatchList needs your attention."
         msg.attach(MIMEText(body, "plain"))
 
 
@@ -56,14 +58,43 @@ class Server():
         response = jsonify({})
         response.status_code = 200 
         return response
-
+    
+    
     # todo TO TEST
     @app.route('/db_api/update_listing', methods=['GET'])
     def update_listing(listing_id, price):
+            # Query all users
+        users_ref = Server.db.collection('users')
+        users_snap = users_ref.stream()
         apartment_ref = Server.db.collection("apartments").document(listing_id)
+        apartment_snap = apartment_ref.get()
+        if apartment_snap.exists:
+            if price <= int(apartment_snap.get("price_target")):
+                # print("Apartment "+str(listing_id)+" has dropped in price to "+str(price)+" which is below the target price of "+str(apartment_snap.get("price_target")))
+                # Iterate over each user
+                for user_doc in users_snap:
+                    user_id = user_doc.id
+                    # Query the user's watchlist to see if the apartment is there
+                    watchlist_ref = Server.db.collection('users').document(user_id).collection('watchlist')
+                    watchlist_snap = watchlist_ref.stream()
+
+                    for watchlist_item in watchlist_snap:
+                        apartment_id = watchlist_item.id
+                        if apartment_id == listing_id:
+                            # print("Apartment "+str(listing_id)+" found in watchlist of user "+str(user_id))
+                            Server.send_email(user_doc.get("email"))
+
+
+        
+        
+
+            
+            
+
         apartment_ref.update({"price" : price})
-        response = jsonify({})
-        response.status_code = 200 
+
+        response = jsonify({"ok": "item updated"})
+        response.status_code = 200
         return response
         
     @app.route('/db_api/fetch_watchlist', methods=['GET'])
