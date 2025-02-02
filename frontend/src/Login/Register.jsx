@@ -43,24 +43,25 @@ const Register = () => {
 
   return (
     <Box
-      display="flex"
-      justifyContent="center"
-      alignItems="center"
-      height="100vh"
-      bgcolor="#f5f5f5"
-      sx={{fontFamily:'Roboto'}}
-    >
-      <Paper
-        elevation={3}
-        sx={{
-          padding: 4,
-          width: 400,
-          borderRadius: 3,
-          boxShadow: 3,
-          bgcolor: 'white',
-          textAlign: 'center',
-        }}
-      >
+          display="flex"
+          justifyContent="center"
+          alignItems="center"
+          minHeight="100vh"
+          bgcolor="#f5f5f5"
+          sx={{ fontFamily: 'Roboto' }}
+        >
+          <Paper
+            elevation={3}
+            sx={{
+              padding: 4,
+              maxWidth: '90%', 
+              width: 400,       
+              borderRadius: 3,
+              boxShadow: 3,
+              bgcolor: 'white',
+              textAlign: 'center',
+            }}
+          >
         <Typography variant="h4" color="black" fontWeight="bold">
           Create a new account
         </Typography>
