@@ -6,7 +6,7 @@ import firebase_admin
 import time
 from firebase_admin import credentials, firestore
 import os
-
+from web_scraper import WebScraper
 
 class Server():
 
@@ -17,6 +17,11 @@ class Server():
         os.path.expanduser("~/Downloads/cred.json"))
     firebase_admin.initialize_app(cred)
     db = firestore.client()
+    
+    ws = None
+
+    def __init__(self) -> None:
+        Server.ws = WebScraper()
 
     def hash_data(data):
         return hashlib.sha256(data.encode()).hexdigest()
