@@ -64,15 +64,15 @@ class Server():
 
         return response
 
+    # need to fix alois code to test this one TODO
     @app.route('/db_api/save_listing', methods=['POST'])
     def save_listing():
         listing_data = request.get_json()
         email = listing_data.get('email')
         email_hash = Server.hash_data(email)
 
-        price_curr = listing_data.get('curr_price')
+        listing_url = listing_data.get('url')
         pirce_target = listing_data.get('target_price')
-        desc = listing_data.get('desc')
 
         listing_id = uuid.uuid4().__str__()
 
@@ -81,16 +81,21 @@ class Server():
         if user_listing.exists:
             response = jsonify({"error":"what you tryna do, one time is more than enough, bitch trying to add same listing multiple times"})
         else:
+
+            json_scrape = Server.ws.webscrapeKijijiPage(listing_url)
+            desc = json_scrape["title"]
+            price = json_scrape["price"]
+
             watchlist_ref.document(listing_id).set({
                 "addedAt": time.time()
             })
 
-            listing_docref = Server.db.collection(
-                'apartments').document(listing_id)
+            listing_docref = Server.db.collection('apartments').document(listing_id)
             listing_docref.set({
-                "price": price_curr,
+                "price": price,
                 "price_target": pirce_target,
-                "description": desc
+                "description": desc,
+                "listing_url": listing_url
             })
 
             response = jsonify({"ok": "listing saved"})
@@ -175,3 +180,13 @@ class Server():
         response = jsonify({"ok": "user authed"})
         response.status_code = 200
         return response
+    
+    # TODO
+    def refresh_listings():
+        listings = Server.db.collection('apartments').stream()
+        
+        for listing in listings:
+            listing_dict = listing.to_dict()
+
+
+
