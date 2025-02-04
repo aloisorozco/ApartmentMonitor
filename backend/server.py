@@ -84,13 +84,6 @@ class Server():
                             body = "The appartment: "+str(apartment_snap.get("description")+" has dropped below target price!")
                             Server.send_email(user_doc.get("email"), subject, body)
 
-
-        
-        
-
-            
-            
-
         apartment_ref.update({"price" : price})
 
         response = jsonify({"ok": "item updated"})
@@ -112,14 +105,16 @@ class Server():
 
     @app.route('/db_api/save_listing', methods=['POST'])
     def save_listing():
-        email = request.form.get('fname')
+        email = request.form.get('email')
         email_hash = Server.hash_data(email)
 
         price_curr = request.form.get('curr_price')
-        pirce_target = request.form.get('target_price')
+        price_target = request.form.get('target_price')
+        location = request.form.get('location')
         desc = request.form.get('desc')
+        image_link = request.form.get('image_link')
 
-        listing_id = uuid.uuid4()
+        listing_id = str(uuid.uuid4())
 
         watchlist_ref = Server.db.collection('users').document(email_hash).collection('watchlist')
         watchlist_ref.document(listing_id).set({
@@ -129,8 +124,11 @@ class Server():
         listing_docref = Server.db.collection('apartments').document(listing_id)
         listing_docref.set({
             "price": price_curr,
-            "price_target": pirce_target,
-            "description": desc
+            "price_target": price_target,
+            "location" : location,
+            "description" : desc,
+            "image_link" : image_link
+
         })
 
         response = jsonify({"ok": "listing saved"})
@@ -169,7 +167,7 @@ class Server():
 
         # Check here if email already exists
         if doc.exists:
-            response = jsonify({"error": "fuck you, your account already exists"})
+            response = jsonify({"error": "Account already exists"})
             response.status_code = 400
             return response
         
