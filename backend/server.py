@@ -33,20 +33,16 @@ class Server():
     def hash_data(data):
         return hashlib.sha256(data.encode()).hexdigest()
 
-    # todo TO TEST
     @app.route('/db_api/send_email', methods=['GET'])
-    def send_email(receiver_email):
-        print(Server.email_address)
-        print(Server.email_password)
+    def send_email(receiver_email, subject, body):
         smtp_server = "smtp.gmail.com"
         smtp_port = 587  
         
         msg = MIMEMultipart()
         msg["From"] = Server.email_address
         msg["To"] = receiver_email
-        msg["Subject"] = "Test Email"
+        msg["Subject"] = subject
 
-        body = "A Listing in your WatchList needs your attention."
         msg.attach(MIMEText(body, "plain"))
 
 
@@ -54,6 +50,8 @@ class Server():
         mail_server.starttls()  # Upgrade to a secure connection
         mail_server.login(Server.email_address, Server.email_password)  # Login
         mail_server.sendmail(Server.email_address, receiver_email, msg.as_string())  # Send email
+
+        print("Sent mail to "+receiver_email)
 
         response = jsonify({})
         response.status_code = 200 
@@ -81,8 +79,10 @@ class Server():
                     for watchlist_item in watchlist_snap:
                         apartment_id = watchlist_item.id
                         if apartment_id == listing_id:
-                            # print("Apartment "+str(listing_id)+" found in watchlist of user "+str(user_id))
-                            Server.send_email(user_doc.get("email"))
+                            print("Apartment "+str(listing_id)+" found in watchlist of user "+str(user_id))
+                            subject = "Price Drop Alert!"
+                            body = "The appartment: "+str(apartment_snap.get("description")+" has dropped below target price!")
+                            Server.send_email(user_doc.get("email"), subject, body)
 
 
         
