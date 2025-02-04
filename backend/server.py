@@ -23,7 +23,7 @@ class Server():
     email_address = ""
     email_password = ""
 
-    with open("C:\\Users\\cszty\\Downloads\\email_cred.json") as f:
+    with open("email_cred.json") as f:
         data = json.load(f)
         email_address=data['email_address']
         email_password=data['email_password']
