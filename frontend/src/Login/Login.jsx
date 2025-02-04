@@ -2,15 +2,28 @@ import React, { useState } from 'react';
 import { TextField, Button, Box, Typography, Paper } from '@mui/material';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../AuthContext';
+import './Register.css';
 
 const Login = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [errors, setErrors] = useState({});
+
+  const validateFields = () => {
+    const newErrors = {};
+    if (!email.trim()) newErrors.email = true;
+    if (!password.trim()) newErrors.password = true;
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleSubmit = (event) => {
     event.preventDefault();
+
+    if (!validateFields()) return;
 
     fetch("http://localhost:5500/db_api/auth_user", {
       method: "POST",
@@ -29,26 +42,8 @@ const Login = () => {
   };
 
   return (
-    <Box
-      display="flex"
-      justifyContent="center"
-      alignItems="center"
-      minHeight="100vh"
-      bgcolor="#f5f5f5"
-      sx={{ fontFamily: 'Roboto' }}
-    >
-      <Paper
-        elevation={3}
-        sx={{
-          padding: 4,
-          maxWidth: '90%', 
-          width: 400,       
-          borderRadius: 3,
-          boxShadow: 3,
-          bgcolor: 'white',
-          textAlign: 'center',
-        }}
-      >
+    <Box className="register-container">
+      <Paper className="register-paper">
         <Typography variant="h5" color="black" sx={{ paddingBottom: '5px' }}>
           Log into Apartment Monitor
         </Typography>
@@ -56,20 +51,24 @@ const Login = () => {
           <TextField
             label="Email"
             type="email"
-            variant="filled"
+            variant="outlined"
             fullWidth
             margin="normal"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            error={!!errors.email}
+            className="register-input"
           />
           <TextField
             label="Password"
             type="password"
-            variant="filled"
+            variant="outlined"
             fullWidth
             margin="normal"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            error={!!errors.password}
+            className="register-input"
           />
 
           <Box sx={{ textAlign: 'center', width: '100%', marginTop: 2 }}>
@@ -77,17 +76,12 @@ const Login = () => {
               type="submit"
               variant="contained"
               fullWidth
-              sx={{
-                backgroundColor: '#00a400',
-                color: 'white',
-                fontWeight: 'bold',
-                borderRadius: '8px',
-              }}
+              className="register-button"
             >
               Login
             </Button>
 
-            <Typography variant="body2" sx={{ marginTop: 2 }}>
+            <Typography variant="body2" className="register-link">
               <Link to="/register" underline="hover">
                 Don't have an account?
               </Link>
