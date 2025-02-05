@@ -1,27 +1,56 @@
 from bs4 import BeautifulSoup
 import requests
+import requests
+import concurrent.futures
 
-headers = {
-    "User-Agent": "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/117.0"
-}
+class WebScraper:
+  
+  TESTURL = "https://www.kijiji.ca/v-apartments-condos/winnipeg/2br-suite-in-character-building-in-the-heart-of-downtown/1700547336"
 
-#test:
+  def __init__(self):
+    self.headers = {
+        "User-Agent": "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/117.0"
+    }
+
+    # with open("proxies.txt", 'r') as f:
+    #   proxies = f.read().split("\n")
+    #   # we are using ThreadPoolExecutor because the bottleneck are the network call opps
+    #   with concurrent.futures.ThreadPoolExecutor() as executor:
+    #     executor.map(self.webscrapeKijijiPage, proxies)
+
+
+  # def webscrapeKijijiPage_iprotation(self, proxy):
+    
+  #   print(f'Proxy used: {proxy}')
+      
+  #   try:  
+  #     result = requests.get(WebScraper.TESTURL, headers=self.headers, proxies={"http": proxy, "https": proxy}, timeout=3)
+  #     doc = BeautifulSoup(result.text, "html.parser")
+
+  #     return {
+  #       "url": WebScraper.TESTURL,
+  #       "title": doc.find("h1", {"itemprop" : "name"}).string,
+  #       "price": doc.find("span", {"itemprop" : "price"}).get("content")
+  #     }
+  #   except:
+  #     print("Error occurred while scraping url")
+  
+  # print("No proxies worked - I am going to loose it")
+        
+  def webscrapeKijijiPage(self, url):
+      
+    try:  
+      result = requests.get(url, headers=self.headers, timeout=3)
+      doc = BeautifulSoup(result.text, "html.parser")
+
+      return {
+        "url": WebScraper.TESTURL,
+        "title": doc.find("h1", {"itemprop" : "name"}).string,
+        "price": doc.find("span", {"itemprop" : "price"}).get("content")
+      }
+    except:
+      print("Error occurred while scraping url")
+
 url = "https://www.kijiji.ca/v-apartments-condos/winnipeg/2br-suite-in-character-building-in-the-heart-of-downtown/1700547336"
-
-def webscrapeKijijiPage(url):
-  try:
-    result = requests.get(url, headers=headers)
-    doc = BeautifulSoup(result.text, "html.parser")
-
-    return {
-      "url": url,
-      "title": doc.find("h1", {"itemprop" : "name"}).string,
-      "price": doc.find("span", {"itemprop" : "price"}).get("content")
-    }
-  except:
-    print("Error occurred while scraping url")
-    return {
-      "err": True
-    }
-
-webscrapeKijijiPage(url)
+ws = WebScraper()
+print(ws.webscrapeKijijiPage(url))
