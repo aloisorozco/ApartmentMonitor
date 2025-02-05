@@ -1,6 +1,5 @@
 from bs4 import BeautifulSoup
 import requests
-import requests
 import concurrent.futures
 
 class WebScraper:
