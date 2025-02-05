@@ -7,6 +7,12 @@ import time
 from firebase_admin import credentials, firestore
 import os
 from web_scraper import WebScraper
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+import json
+
+
 
 class Server():
 
@@ -17,6 +23,15 @@ class Server():
         os.path.expanduser("~/Downloads/cred.json"))
     firebase_admin.initialize_app(cred)
     db = firestore.client()
+    email_address = ""
+    email_password = ""
+
+    with open("email_cred.json") as f:
+        data = json.load(f)
+        email_address=data['email_address']
+        email_password=data['email_password']
+        
+
     
     ws = None
 
@@ -26,24 +41,60 @@ class Server():
     def hash_data(data):
         return hashlib.sha256(data.encode()).hexdigest()
 
-    # todo
-    @app.route('/db_api/send_msgd', methods=['GET'])
-    def send_msgd():
-        response = jsonify({})
-        response.status_code = 200
-        return response
-
-    # todo
     @app.route('/db_api/send_email', methods=['GET'])
-    def send_email():
+    def send_email(receiver_email, subject, body):
+        smtp_server = "smtp.gmail.com"
+        smtp_port = 587  
+        
+        msg = MIMEMultipart()
+        msg["From"] = Server.email_address
+        msg["To"] = receiver_email
+        msg["Subject"] = subject
+
+        msg.attach(MIMEText(body, "plain"))
+
+
+        mail_server = smtplib.SMTP(smtp_server, smtp_port)
+        mail_server.starttls()  # Upgrade to a secure connection
+        mail_server.login(Server.email_address, Server.email_password)  # Login
+        mail_server.sendmail(Server.email_address, receiver_email, msg.as_string())  # Send email
+
+        print("Sent mail to "+receiver_email)
+
         response = jsonify({})
         response.status_code = 200
         return response
-
-    # todo
+    
+    
+    # todo TO TEST
     @app.route('/db_api/update_listing', methods=['GET'])
-    def update_listing():
-        response = jsonify({})
+    def update_listing(listing_id, price):
+            # Query all users
+        users_ref = Server.db.collection('users')
+        users_snap = users_ref.stream()
+        apartment_ref = Server.db.collection("apartments").document(listing_id)
+        apartment_snap = apartment_ref.get()
+        if apartment_snap.exists:
+            if price <= int(apartment_snap.get("price_target")):
+                # print("Apartment "+str(listing_id)+" has dropped in price to "+str(price)+" which is below the target price of "+str(apartment_snap.get("price_target")))
+                # Iterate over each user
+                for user_doc in users_snap:
+                    user_id = user_doc.id
+                    # Query the user's watchlist to see if the apartment is there
+                    watchlist_ref = Server.db.collection('users').document(user_id).collection('watchlist')
+                    watchlist_snap = watchlist_ref.stream()
+
+                    for watchlist_item in watchlist_snap:
+                        apartment_id = watchlist_item.id
+                        if apartment_id == listing_id:
+                            print("Apartment "+str(listing_id)+" found in watchlist of user "+str(user_id))
+                            subject = "Price Drop Alert!"
+                            body = "The appartment: "+str(apartment_snap.get("description")+" has dropped below target price!")
+                            Server.send_email(user_doc.get("email"), subject, body)
+
+        apartment_ref.update({"price" : price})
+
+        response = jsonify({"ok": "item updated"})
         response.status_code = 200
         return response
 
@@ -67,14 +118,16 @@ class Server():
     # need to fix alois code to test this one TODO
     @app.route('/db_api/save_listing', methods=['POST'])
     def save_listing():
-        listing_data = request.get_json()
-        email = listing_data.get('email')
+        email = request.form.get('email')
         email_hash = Server.hash_data(email)
 
-        listing_url = listing_data.get('url')
-        pirce_target = listing_data.get('target_price')
+        price_curr = request.form.get('curr_price')
+        price_target = request.form.get('target_price')
+        location = request.form.get('location')
+        desc = request.form.get('desc')
+        image_link = request.form.get('image_link')
 
-        listing_id = uuid.uuid4().__str__()
+        listing_id = str(uuid.uuid4())
 
         watchlist_ref = Server.db.collection('users').document(email_hash).collection('watchlist')
         user_listing = watchlist_ref.document(listing_id).get()
@@ -82,9 +135,15 @@ class Server():
             response = jsonify({"error":"what you tryna do, one time is more than enough, bitch trying to add same listing multiple times"})
         else:
 
-            json_scrape = Server.ws.webscrapeKijijiPage(listing_url)
-            desc = json_scrape["title"]
-            price = json_scrape["price"]
+            listing_docref = Server.db.collection('apartments').document(listing_id)
+            listing_docref.set({
+                "price": price_curr,
+                "price_target": price_target,
+                "location" : location,
+                "description" : desc,
+                "image_link" : image_link
+
+            })
 
             watchlist_ref.document(listing_id).set({
                 "addedAt": time.time()
@@ -136,8 +195,7 @@ class Server():
 
         # Check here if email already exists
         if doc.exists:
-            response = jsonify(
-                {"error": "fuck you, your account already exists"})
+            response = jsonify({"error": "Account already exists"})
             response.status_code = 400
             return response
 
