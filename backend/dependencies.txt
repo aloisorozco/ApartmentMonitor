@@ -2,4 +2,4 @@ firecloud
 firebase-admin
 flask
 flask-cors
-
+beautifulsoup4
