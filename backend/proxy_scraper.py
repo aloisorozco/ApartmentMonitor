@@ -20,7 +20,11 @@ class ProxyScraper:
       proxies = []
 
       for row in table:
+        
         ip_info = row.find_all("td")
+
+        if str(ip_info[6]).lower() == 'no':
+          continue
         ip = ip_info[0].string
         port = int(ip_info[1].string)
         proxies.append((ip, port))
