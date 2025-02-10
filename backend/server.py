@@ -9,7 +9,8 @@ import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 import json
-
+from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.triggers.interval import IntervalTrigger
 
 
 class Server():
@@ -20,6 +21,8 @@ class Server():
     cred: credentials.Certificate = credentials.Certificate("cred.json")
     firebase_admin.initialize_app(cred)
     db = firestore.client()
+
+
     email_address = ""
     email_password = ""
 
@@ -27,6 +30,15 @@ class Server():
         data = json.load(f)
         email_address=data['email_address']
         email_password=data['email_password']
+
+    scheduler = BackgroundScheduler()
+    scheduler.start()
+
+    @scheduler.scheduled_job(IntervalTrigger(seconds=5))
+    def begin_scraping():
+        print("Beginning Scraping")
+
+    
         
 
     
