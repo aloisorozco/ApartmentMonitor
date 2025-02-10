@@ -4,9 +4,11 @@ from proxy_scraper import ProxyScraper
 import aiohttp
 import asyncio
 import ssl
+import queue
 
 class WebScraper:
   
+  # TODO: make singleton
   _TESTURL = "https://www.kijiji.ca/v-apartments-condos/winnipeg/2br-suite-in-character-building-in-the-heart-of-downtown/1700547336"
   _HEADERS = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36"}
   _PROXY_SCRAPER = ProxyScraper()
@@ -14,8 +16,36 @@ class WebScraper:
   _SSL_CTX = ssl.create_default_context()
   _SSL_CTX.check_hostname = False
   _SSL_CTX.verify_mode = ssl.CERT_NONE
+  _TOKEN = "no token for you bozo"
 
-  def websrcape_url(self):
+  _proxy_list = queue.Queue()
+
+  # scraping with premium proxies
+  def websrcape_url_premium_proxies(self):
+
+    # Iterate over all proxies - return on first working proxy result
+    for _ in range(len(WebScraper._proxy_list)):
+      
+      proxy = WebScraper._proxy_list.get()
+
+      try:
+        result = requests.get(utl=WebScraper._TESTURL, proxies=proxy)      
+        doc = BeautifulSoup(result.text, "html.parser")
+
+        # Put back the proxy at the end of queue - rotating
+        WebScraper._proxy_list.put(proxy)
+
+        return {
+          "url": WebScraper._TESTURL,
+          "title": doc.find("h1", {"itemprop" : "name"}).string,
+          "price": doc.find("span", {"itemprop" : "price"}).get("content")
+        }
+      except Exception as e:
+        print(f'Error occurred while scraping url: {e}')
+        # Put back the proxy at the end of queue even if it failed - rotating
+        WebScraper._proxy_list.put(proxy)
+
+  def websrcape_url_scrape_proxies(self):
     
     proxies = WebScraper._PROXY_SCRAPER.proxy_scraping()
     try:  

@@ -1,7 +1,6 @@
 import requests
-TOKEN = "ask daniel"
- 
-import requests
+
+TOKEN = "hell na"
  
 response = requests.get(
     "https://proxy.webshare.io/api/v2/proxy/list/?mode=direct&page=1&page_size=25",
@@ -9,5 +8,3 @@ response = requests.get(
 )
  
 response = response.json()
-
-print(response)
