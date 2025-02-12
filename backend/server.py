@@ -12,8 +12,6 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 import json
 
-
-
 class Server():
 
     # letting flask know that all stuff it needs is in this dir
@@ -31,8 +29,6 @@ class Server():
         email_address=data['email_address']
         email_password=data['email_password']
         
-
-    
     ws = None
 
     def __init__(self) -> None:
