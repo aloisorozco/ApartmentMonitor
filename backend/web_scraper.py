@@ -14,8 +14,6 @@ from proxy import Proxy
 # TODO: make dunder new and dunder init thread safe (use mutex)
 class WebScraper:
   
-  # TODO: make singleton
-  _TESTURL = "https://www.kijiji.ca/v-apartments-condos/winnipeg/2br-suite-in-character-building-in-the-heart-of-downtown/1700547336"
   _HEADERS = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36"}
 
   _sngleton_instance = None
@@ -40,7 +38,7 @@ class WebScraper:
     self._ssl_ctx = ssl.create_default_context()
     self._ssl_ctx.check_hostname = False
     self._ssl_ctx.verify_mode = ssl.CERT_NONE
-    self._token = "I want an job offer (200k + comp) pls"
+    self._token = "joe mama"
     self._get_premium_proxies() # populate premium proxies list
 
   # need to find a way to auto rotate the proxies once in a while - maybe a counter since its a singleton?
@@ -53,7 +51,7 @@ class WebScraper:
       self._proxy_list.put(Proxy(proxy['id'], proxy['username'], proxy['password'],proxy['proxy_address'], proxy['port']))
 
   # scraping with premium proxies - one by one, TODO: for not its ok, but in the future we need to find a way to manage concurency
-  def websrcape_url_premium_proxies(self):
+  def websrcape_url_premium_proxies(self, target_url):
 
     # Iterate over all proxies - return on first working proxy result
     for _ in range(self._proxy_list.qsize()):
@@ -62,14 +60,14 @@ class WebScraper:
       print(f'using proxie: {proxy}')
 
       try:
-        result = requests.get(url=WebScraper._TESTURL, proxies=proxy.proxy_formatted())      
+        result = requests.get(url=target_url, proxies=proxy.proxy_formatted())      
         doc = BeautifulSoup(result.text, "html.parser")
 
         # Put back the proxy at the end of queue - rotating
         self._proxy_list.put(proxy)
 
         return {
-          "url": WebScraper._TESTURL,
+          "url": target_url,
           "title": doc.find("h1", {"itemprop" : "name"}).string,
           "price": doc.find("span", {"itemprop" : "price"}).get("content")
         }
@@ -79,12 +77,12 @@ class WebScraper:
         self._proxy_list.put(proxy)
 
   # bad proxies - keep it in cases we need to rotate/ test bad proxies
-  def websrcape_url_scrape_proxies(self):
+  def websrcape_url_scrape_proxies(self, target_url):
     
     proxies = self._proxy_scraper.proxy_scraping()
     try:  
       
-      result = asyncio.run(self._fetch_listing_data(proxies, WebScraper._TESTURL))
+      result = asyncio.run(self._fetch_listing_data(proxies, target_url))
       if result == None:
          print(f'Proxies failed - could not get any result')
          return
@@ -92,7 +90,7 @@ class WebScraper:
       doc = BeautifulSoup(result.text, "html.parser")
 
       return {
-        "url": WebScraper._TESTURL,
+        "url": target_url,
         "title": doc.find("h1", {"itemprop" : "name"}).string,
         "price": doc.find("span", {"itemprop" : "price"}).get("content")
       }

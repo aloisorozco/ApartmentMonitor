@@ -41,7 +41,7 @@ class Server():
 
     @scheduler.scheduled_job(IntervalTrigger(seconds=5))
     def begin_scraping():
-        print("Beginning Scraping")
+        print("Chance implement this")
 
     def hash_data(data):
         return hashlib.sha256(data.encode()).hexdigest()
@@ -71,10 +71,10 @@ class Server():
         return response
     
     
-    # todo TO TEST
+    # TODO: TO TEST
     @app.route('/db_api/update_listing', methods=['GET'])
     def update_listing(listing_id, price):
-            # Query all users
+        # Query all users
         users_ref = Server.db.collection('users')
         users_snap = users_ref.stream()
         apartment_ref = Server.db.collection("apartments").document(listing_id)
@@ -105,7 +105,8 @@ class Server():
         
     @app.route('/db_api/fetch_watchlist', methods=['GET'])
     def fetch_watchlist():
-        email = request.form.get('email')
+        data = request.get_json()
+        email = data.get('email')
         email_hash = Server.hash_data(email)
         watchlist = Server.db.collection('users').document(email_hash).collection('watchlist').get()
         response = jsonify({})
@@ -118,14 +119,31 @@ class Server():
 
     @app.route('/db_api/save_listing', methods=['POST'])
     def save_listing():
-        email = request.form.get('email')
+        data = request.get_json()
+        email = data.get('email')
         email_hash = Server.hash_data(email)
 
-        price_curr = request.form.get('curr_price')
-        price_target = request.form.get('target_price')
-        location = request.form.get('location')
-        desc = request.form.get('desc')
-        image_link = request.form.get('image_link')
+        price_target = data.get('target_price')
+        url = data.get('url')
+
+        # TODO: add error handeling
+        # Web scrape
+        listing_data = Server.ws.websrcape_url_premium_proxies(url)
+        price_curr = listing_data.get('price')
+        desc = listing_data.get('title')
+
+        # TODO: Web scrape - later
+        location = data.get('location')
+        image_link = data.get('image_link')
+
+        listing_data_processed = {
+            "price": price_curr,
+            "price_target": price_target,
+            "location" : location,
+            "description" : desc,
+            "image_link" : image_link,
+            "url" : url
+        }
 
         listing_id = str(uuid.uuid4())
 
@@ -135,24 +153,18 @@ class Server():
         })
 
         listing_docref = Server.db.collection('apartments').document(listing_id)
-        listing_docref.set({
-            "price": price_curr,
-            "price_target": price_target,
-            "location" : location,
-            "description" : desc,
-            "image_link" : image_link
+        listing_docref.set(listing_data_processed)
 
-        })
-
-        response = jsonify({"ok": "listing saved"})
+        response = jsonify(listing_data_processed)
         response.status_code = 200
         return response
 
     @app.route('/db_api/remove_listing', methods=['DELETE'])
     def remove_listing():
-        email = request.form.get('fname')
+        data = request.get_json()
+        email = data.get('fname')
         email_hash = Server.hash_data(email)
-        listing_id = request.form.get('listing_id')
+        listing_id = data.get('listing_id')
 
         watchlist_ref = Server.db.collection('users').document(email_hash).collection('watchlist')
         watchlist_ref.document(listing_id).delete()
@@ -164,12 +176,13 @@ class Server():
 
     @app.route('/db_api/register_user', methods=['POST'])
     def register_user():
-        fname = request.form.get('fname')
-        lname = request.form.get('lname')
-        pword = request.form.get('password')
+        data = request.get_json()
+        fname = data.get('fname')
+        lname = data.get('lname')
+        pword = data.get('password')
 
         # use the email as unqiue ID
-        email = request.form.get('email')
+        email = data.get('email')
         email_encr = Server.hash_data(email) 
         password_encr = Server.hash_data(pword)
 
@@ -198,22 +211,23 @@ class Server():
         return response
 
 
-    @app.route('/db_api/auth_user', methods=['GET'])
+    @app.route('/db_api/auth_user', methods=['POST'])
     def auth_user():
-        password = request.form.get('password')
-        email = request.form.get('email')
+        data = request.get_json()
+        password = data.get('password')
+        email = data.get('email')
 
         enterred_password = Server.hash_data(password)
         enterred_email = Server.hash_data(email)
         user_db = Server.db.collection("users").document(enterred_email).get()
-
+        
         if not user_db.exists:
             response = jsonify({"error": "User does not exist or provided information is wrong"})
             response.status_code = 400
             return response
         
         user_info = user_db.to_dict()
-        password_db = user_info.get(password, "There was an error")
+        password_db = user_info.get('password_hashed', "There was an error")
         if(enterred_password != password_db):
             response = jsonify({"error": "Password Invalid"})
             response.status_code = 400
