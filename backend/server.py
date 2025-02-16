@@ -1,4 +1,4 @@
-from flask import Flask, json, request, jsonify
+from flask import Flask, request, jsonify
 import hashlib
 import uuid
 from flask_cors import CORS
@@ -11,14 +11,16 @@ import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 import json
+from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.triggers.interval import IntervalTrigger
+
 
 class Server():
-
+    
     # letting flask know that all stuff it needs is in this dir
     app = Flask(__name__)
     CORS(app)
-    cred: credentials.Certificate = credentials.Certificate(
-        os.path.expanduser("~/Downloads/cred.json"))
+    cred: credentials.Certificate = credentials.Certificate("cred.json")
     firebase_admin.initialize_app(cred)
     db = firestore.client()
     email_address = ""
@@ -33,6 +35,13 @@ class Server():
 
     def __init__(self) -> None:
         Server.ws = WebScraper()
+
+    scheduler = BackgroundScheduler()
+    scheduler.start()
+
+    @scheduler.scheduled_job(IntervalTrigger(seconds=5))
+    def begin_scraping():
+        print("Beginning Scraping")
 
     def hash_data(data):
         return hashlib.sha256(data.encode()).hexdigest()
@@ -93,25 +102,20 @@ class Server():
         response = jsonify({"ok": "item updated"})
         response.status_code = 200
         return response
-
+        
     @app.route('/db_api/fetch_watchlist', methods=['GET'])
     def fetch_watchlist():
-        email = request.args.get('email')
+        email = request.form.get('email')
         email_hash = Server.hash_data(email)
-        wtachlist = Server.db.collection('users').document(
-            email_hash).collection('watchlist')
+        watchlist = Server.db.collection('users').document(email_hash).collection('watchlist').get()
         response = jsonify({})
         response.status_code = 200
 
-        docs = wtachlist.stream()
-
-        if any(docs):
-            documents = [doc.to_dict() for doc in docs]
-            response = json.dumps(documents, indent=2)
-
+        if watchlist.exists:
+            response =  jsonify(watchlist.to_dict())
+        
         return response
 
-    # need to fix alois code to test this one TODO
     @app.route('/db_api/save_listing', methods=['POST'])
     def save_listing():
         email = request.form.get('email')
@@ -126,45 +130,31 @@ class Server():
         listing_id = str(uuid.uuid4())
 
         watchlist_ref = Server.db.collection('users').document(email_hash).collection('watchlist')
-        user_listing = watchlist_ref.document(listing_id).get()
-        if user_listing.exists:
-            response = jsonify({"error":"what you tryna do, one time is more than enough, bitch trying to add same listing multiple times"})
-        else:
+        watchlist_ref.document(listing_id).set({
+            "addedAt": time.time()
+        })
 
-            listing_docref = Server.db.collection('apartments').document(listing_id)
-            listing_docref.set({
-                "price": price_curr,
-                "price_target": price_target,
-                "location" : location,
-                "description" : desc,
-                "image_link" : image_link
+        listing_docref = Server.db.collection('apartments').document(listing_id)
+        listing_docref.set({
+            "price": price_curr,
+            "price_target": price_target,
+            "location" : location,
+            "description" : desc,
+            "image_link" : image_link
 
-            })
+        })
 
-            watchlist_ref.document(listing_id).set({
-                "addedAt": time.time()
-            })
-
-            listing_docref = Server.db.collection('apartments').document(listing_id)
-            listing_docref.set({
-                "price": price,
-                "price_target": pirce_target,
-                "description": desc,
-                "listing_url": listing_url
-            })
-
-            response = jsonify({"ok": "listing saved"})
-            response.status_code = 200
-            return response
+        response = jsonify({"ok": "listing saved"})
+        response.status_code = 200
+        return response
 
     @app.route('/db_api/remove_listing', methods=['DELETE'])
     def remove_listing():
-        email = request.args.get('email')
+        email = request.form.get('fname')
         email_hash = Server.hash_data(email)
-        listing_id = request.args.get('listing_id')
+        listing_id = request.form.get('listing_id')
 
-        watchlist_ref = Server.db.collection('users').document(
-            email_hash).collection('watchlist')
+        watchlist_ref = Server.db.collection('users').document(email_hash).collection('watchlist')
         watchlist_ref.document(listing_id).delete()
         Server.db.collection('apartments').document(listing_id).delete()
 
@@ -174,14 +164,13 @@ class Server():
 
     @app.route('/db_api/register_user', methods=['POST'])
     def register_user():
-        form_data = request.get_json()
-        fname = form_data.get('fname')
-        lname = form_data.get('lname')
-        pword = form_data.get('password')
+        fname = request.form.get('fname')
+        lname = request.form.get('lname')
+        pword = request.form.get('password')
 
         # use the email as unqiue ID
-        email = form_data.get('email')
-        email_encr = Server.hash_data(email)
+        email = request.form.get('email')
+        email_encr = Server.hash_data(email) 
         password_encr = Server.hash_data(pword)
 
         # make sure email is not in the firebase db based on hash here
@@ -194,7 +183,7 @@ class Server():
             response = jsonify({"error": "Account already exists"})
             response.status_code = 400
             return response
-
+        
         print("saving user")
         email_docref.set({
             "fname": fname,
@@ -208,25 +197,24 @@ class Server():
         response.status_code = 200
         return response
 
-    @app.route('/db_api/auth_user', methods=['POST'])
+
+    @app.route('/db_api/auth_user', methods=['GET'])
     def auth_user():
-        data = request.get_json()
-        password = data.get('password')
-        email = data.get('email')
+        password = request.form.get('password')
+        email = request.form.get('email')
 
         enterred_password = Server.hash_data(password)
         enterred_email = Server.hash_data(email)
         user_db = Server.db.collection("users").document(enterred_email).get()
 
         if not user_db.exists:
-            response = jsonify(
-                {"error": "User does not exist or provided information is wrong"})
+            response = jsonify({"error": "User does not exist or provided information is wrong"})
             response.status_code = 400
             return response
-
+        
         user_info = user_db.to_dict()
-        password_db = user_info.get("password_hashed", "There was an error")
-        if (enterred_password != password_db):
+        password_db = user_info.get(password, "There was an error")
+        if(enterred_password != password_db):
             response = jsonify({"error": "Password Invalid"})
             response.status_code = 400
             return response
@@ -234,13 +222,3 @@ class Server():
         response = jsonify({"ok": "user authed"})
         response.status_code = 200
         return response
-    
-    # TODO
-    def refresh_listings():
-        listings = Server.db.collection('apartments').stream()
-        
-        for listing in listings:
-            listing_dict = listing.to_dict()
-
-
-
