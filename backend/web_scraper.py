@@ -1,3 +1,4 @@
+import json
 from urllib.request import HTTPBasicAuthHandler
 from bs4 import BeautifulSoup
 import requests
@@ -7,6 +8,7 @@ import asyncio
 import ssl
 import queue
 from proxy import Proxy
+import re
 
 # TODO: make thread safe in the future - should be easy since we always juggle only one instance - in the futre we may need many insance for many users
 # interacting with a share proxy list
@@ -38,7 +40,11 @@ class WebScraper:
     self._ssl_ctx = ssl.create_default_context()
     self._ssl_ctx.check_hostname = False
     self._ssl_ctx.verify_mode = ssl.CERT_NONE
-    self._token = "joe mama"
+    
+    with open("proxy_cred.json") as f:
+      data = json.load(f)  
+      self._token = data["token"]
+
     self._get_premium_proxies() # populate premium proxies list
 
   # need to find a way to auto rotate the proxies once in a while - maybe a counter since its a singleton?
@@ -63,18 +69,37 @@ class WebScraper:
         result = requests.get(url=target_url, proxies=proxy.proxy_formatted())      
         doc = BeautifulSoup(result.text, "html.parser")
 
+        # pattern = re.compile(r'slideList')
+        # # For now we get just the main immage - TODO: figure out how to websrape the whole carousel
+        # # kijiji uses an IFrame, so may be more difficult as we need to simulate a click
+        
+        # carousel = doc.find_all('ul', class_=pattern)
+        # print(carousel)
+        # listing_images = []
+        # if carousel:
+        #   list_items = carousel.find_all('li')
+        #   for item in list_items:
+        #     img = item.find("img", {"itemprop" : "image"}).get("src")
+        #     listing_images.append(img)
+
         # Put back the proxy at the end of queue - rotating
         self._proxy_list.put(proxy)
 
         return {
           "url": target_url,
           "title": doc.find("h1", {"itemprop" : "name"}).string,
-          "price": doc.find("span", {"itemprop" : "price"}).get("content")
+          "price": doc.find("span", {"itemprop" : "price"}).get("content"),
+          "location": doc.find("span", {"itemprop" : "address"}).get_text(),
+          "images": doc.find("div", {"class" : "mainImage"}).find("img", {"itemprop": "image"}).get("src"),
         }
+      
       except Exception as e:
         print(f'Error occurred while scraping url: {e}')
         # Put back the proxy at the end of queue even if it failed - rotating
         self._proxy_list.put(proxy)
+        raise e
+    
+    raise Exception("Ran out of proxies when parsing (time to ball out and buy our own proxies)")
 
   # bad proxies - keep it in cases we need to rotate/ test bad proxies
   def websrcape_url_scrape_proxies(self, target_url):
@@ -144,6 +169,6 @@ class WebScraper:
 # w2 = WebScraper()
 
 # print(ws is w2)
-
-# print(ws.websrcape_url_premium_proxies())
+# test_url = "https://www.kijiji.ca/v-apartments-condos/winnipeg/2br-suite-in-character-building-in-the-heart-of-downtown/1700547336"
+# print(ws.websrcape_url_premium_proxies(test_url))
       
