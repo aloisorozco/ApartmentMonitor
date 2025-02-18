@@ -5,7 +5,6 @@ from flask_cors import CORS
 import firebase_admin
 import time
 from firebase_admin import credentials, firestore
-import os
 from web_scraper import WebScraper
 import smtplib
 from email.mime.text import MIMEText
@@ -126,15 +125,19 @@ class Server():
         price_target = data.get('target_price')
         url = data.get('url')
 
-        # TODO: add error handeling
+        try:
         # Web scrape
-        listing_data = Server.ws.websrcape_url_premium_proxies(url)
-        price_curr = listing_data.get('price')
-        desc = listing_data.get('title')
-
-        # TODO: Web scrape - later
-        location = data.get('location')
-        image_link = data.get('image_link')
+            listing_data = Server.ws.websrcape_url_premium_proxies(url)
+            price_curr = listing_data.get('price')
+            desc = listing_data.get('title')
+            location = listing_data.get('location')
+            image_link = listing_data.get('image_link')
+        
+        except Exception as e:
+            print(f'[ERROR] error when parsing: {e}')
+            response = jsonify({'error' : 'parsing issue'})
+            response.status_code = 500
+            return response
 
         listing_data_processed = {
             "price": price_curr,
