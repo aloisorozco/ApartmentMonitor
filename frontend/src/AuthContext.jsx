@@ -1,6 +1,6 @@
 import React, { createContext, useState, useContext, useEffect } from "react";
 
-// Global authentication tracker
+// create the context
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
@@ -22,7 +22,7 @@ export const AuthProvider = ({ children }) => {
     }
   }, []);
 
-  // Login function to set auth and store in sessionStorage
+  // Login function to set auth/email and store in sessionStorage
   const login = (email) => {
     setAuth(true);
     setUserEmail(email);
@@ -31,7 +31,7 @@ export const AuthProvider = ({ children }) => {
     console.log("authStatus and email stored in sessionStorage");
   };
 
-  // Logout function to reset auth and remove from sessionStorage
+  // Logout function to reset auth/email and remove from sessionStorage
   const logout = () => {
     setAuth(false);
     setUserEmail(null);
@@ -40,12 +40,14 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
+    //all its children have access to these values/functions
     <AuthContext.Provider value={{ auth, userEmail, login, logout }}>
       {children}
     </AuthContext.Provider>
   );
 };
 
+//default function to call to access its parents data
 export const useAuth = () => {
   return useContext(AuthContext);
 };
