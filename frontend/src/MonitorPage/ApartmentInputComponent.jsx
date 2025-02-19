@@ -12,16 +12,35 @@ export default function ApartmentInputComponent(props) {
     if (isEmpty(url)) {
       return;
     }
-    setApartmentListings([
-      ...apartmentListings,
-      {
-        title: url,
-        url: url,
-        targetPrice: 600,
-        currentPrice: 900,
-      },
-    ]);
-    setUrl('');
+
+    let email = "get this somehow"
+    let targetPrice =  600
+    
+    fetch("http://localhost:5500/db_api/save_listing", {
+      method: "POST",
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ emial: email, target_Price : targetPrice, url: url})
+    })
+      .then(response => {
+        if (response.ok) {
+          return response.json()
+        } else {
+          console.log("Invalid Credentials");
+        }
+      }).then(data => {
+        setApartmentListings([
+          ...apartmentListings,
+          { 
+            // set here the img + description
+            title: data.location,
+            url: url,
+            targetPrice: 600,
+            currentPrice: data.price_curr,
+          },
+        ]);
+        setUrl('');
+      })
+      .catch(error => console.log(error));
   };
 
   return (

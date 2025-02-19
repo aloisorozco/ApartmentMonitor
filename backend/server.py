@@ -124,6 +124,7 @@ class Server():
 
         price_target = data.get('target_price')
         url = data.get('url')
+        url = data.get('url')
 
         try:
         # Web scrape

@@ -4,6 +4,9 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../AuthContext';
 import './Register.css';
 
+// Global email tracker
+const LoginContext = createContext();
+
 const Login = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
@@ -34,14 +37,22 @@ const Login = () => {
         if (response.ok) {
           login();
           navigate('/');
+          return response.json()
         } else {
           console.log("Invalid Credentials");
         }
+      })
+      .then(data => {
+        console.log(data); // Access the response data
       })
       .catch(error => console.log(error));
   };
 
   return (
+    // Figure this out
+    // <LoginContext.Provider value={{email}}>
+    //   {children}
+    // </LoginContext.Provider>
     <Box className="register-container">
       <Paper className="register-paper">
         <Typography variant="h5" color="black" sx={{ paddingBottom: '5px' }}>
