@@ -4,9 +4,6 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../AuthContext';
 import './Register.css';
 
-// Global email tracker
-const LoginContext = createContext();
-
 const Login = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
@@ -14,6 +11,7 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState({});
 
+  //validates the fields
   const validateFields = () => {
     const newErrors = {};
     if (!email.trim()) newErrors.email = true;
@@ -24,9 +22,9 @@ const Login = () => {
   };
 
   const handleSubmit = (event) => {
-    event.preventDefault();
+    event.preventDefault(); //don't refresh the page
 
-    if (!validateFields()) return;
+    if (!validateFields()) return; //if invalid field, don't POST
 
     fetch("http://localhost:5500/db_api/auth_user", {
       method: "POST",
@@ -35,24 +33,19 @@ const Login = () => {
     })
       .then(response => {
         if (response.ok) {
-          login();
-          navigate('/');
-          return response.json()
+          login(email); //pass in email into context
+          navigate('/'); //navigate to main page
         } else {
           console.log("Invalid Credentials");
         }
       })
       .then(data => {
-        console.log(data); // Access the response data
+        console.log(data); //view response data
       })
       .catch(error => console.log(error));
   };
 
   return (
-    // Figure this out
-    // <LoginContext.Provider value={{email}}>
-    //   {children}
-    // </LoginContext.Provider>
     <Box className="register-container">
       <Paper className="register-paper">
         <Typography variant="h5" color="black" sx={{ paddingBottom: '5px' }}>

@@ -3,9 +3,11 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
 import { isEmpty } from 'lodash';
+import { useAuth } from '../AuthContext';
 
 export default function ApartmentInputComponent(props) {
   const [url, setUrl] = useState('');
+  const { userEmail } = useAuth();
   const { apartmentListings, setApartmentListings } = props;
 
   const handleAdd = () => {
@@ -13,7 +15,7 @@ export default function ApartmentInputComponent(props) {
       return;
     }
 
-    let email = "get this somehow"
+    let email = userEmail
     let targetPrice =  600
     
     fetch("http://localhost:5500/db_api/save_listing", {

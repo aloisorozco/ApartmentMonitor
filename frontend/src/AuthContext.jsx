@@ -5,35 +5,42 @@ const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [auth, setAuth] = useState(null);
+  const [userEmail, setUserEmail] = useState(null);
 
   // On component mount, check sessionStorage for the auth status
   useEffect(() => {
     const storedAuthStatus = sessionStorage.getItem("authStatus");
-    if (storedAuthStatus === "true") {
+    const storedEmail = sessionStorage.getItem("userEmail");
+
+    //if auth status and email are already in storage, set them to that, else set them to default value.
+    if (storedAuthStatus === "true" && storedEmail) {
       setAuth(true);
+      setUserEmail(storedEmail);
     } else {
       setAuth(false);
+      setUserEmail(null);
     }
   }, []);
 
   // Login function to set auth and store in sessionStorage
-  const login = () => {
+  const login = (email) => {
     setAuth(true);
+    setUserEmail(email);
     sessionStorage.setItem("authStatus", "true");
-    console.log(
-      "authStatus stored in sessionStorage: ",
-      sessionStorage.getItem("authStatus")
-    );
+    sessionStorage.setItem("userEmail", email);
+    console.log("authStatus and email stored in sessionStorage");
   };
 
   // Logout function to reset auth and remove from sessionStorage
   const logout = () => {
     setAuth(false);
+    setUserEmail(null);
     sessionStorage.removeItem("authStatus");
+    sessionStorage.removeItem("userEmail");
   };
 
   return (
-    <AuthContext.Provider value={{ auth, login, logout }}>
+    <AuthContext.Provider value={{ auth, userEmail, login, logout }}>
       {children}
     </AuthContext.Provider>
   );
