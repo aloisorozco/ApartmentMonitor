@@ -13,7 +13,8 @@ import json
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.interval import IntervalTrigger
 
-
+# collection = db entry that contains nothing more than documents
+# document = "end point" that contains properties and other documents/collections
 class Server():
 
     # letting flask know that all stuff it needs is in this dir
@@ -109,18 +110,30 @@ class Server():
 
     @app.route('/db_api/fetch_watchlist', methods=['GET'])
     def fetch_watchlist():
-        data = request.get_json()
-        email = data.get('email')
+        print("fetch good")
+        email =  request.args.get('email')
         email_hash = Server.hash_data(email)
-        watchlist = Server.db.collection('users').document(
-            email_hash).collection('watchlist').get()
+        watchlist = Server.db.collection('users').document(email_hash).collection('watchlist').get()
         response = jsonify({})
         response.status_code = 200
 
-        if watchlist.exists:
-            response = jsonify(watchlist.to_dict())
+        if len(watchlist) > 0:
+            listings = {}
+            # querry each listing info - each listing is a DocumentSnapshot object from user - we need to requery each one
+            # TODO: see if we did not mess up in our db design here, seems wierd we need to requerry so much
+            for listing in watchlist:
+                listing_id = listing.id 
+                # .document(listing_id) will get OR create document with listing_id -> returns a document referance
+                # doing .get() on the document referance -> gets the document snapshot itself; need to check if object itself exists in db or not
+                listing_doc = Server.db.collection('apartments').document(listing_id).get()
+                if listing_doc.exists:
+                    listings[listing_id] = listing_doc.to_dict()
+
+                
+            response = jsonify({"listings" : listings})
 
         return response
+
 
     @app.route('/db_api/save_listing', methods=['POST'])
     def save_listing():
@@ -146,16 +159,18 @@ class Server():
             response.status_code = 500
             return response
 
+
+        listing_id = str(uuid.uuid4())
+
         listing_data_processed = {
             "price": price_curr,
             "price_target": price_target,
             "location": location,
             "description": desc,
             "image_link": image_link,
-            "url": url
+            "url": url,
+            "listing_id" : listing_id
         }
-
-        listing_id = str(uuid.uuid4())
 
         watchlist_ref = Server.db.collection('users').document(
             email_hash).collection('watchlist')
