@@ -1,41 +1,57 @@
 import React, { useState } from 'react';
 import { TextField, Button, Box, Typography, Paper } from '@mui/material';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import './Register.css';
 
 const Register = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
+  const [errors, setErrors] = useState({});
+
+  const navigate = useNavigate();
+
+  const validateFields = () => {
+    const newErrors = {};
+    if (!firstName.trim()) newErrors.firstName = true;
+    if (!lastName.trim()) newErrors.lastName = true;
+    if (!email.trim()) newErrors.email = true;
+    if (!password.trim()) newErrors.password = true;
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    setEmail("");
-    setPassword("");
-    console.log('Email:', email);
-    console.log('Password:', password);
+
+    if (!validateFields()) return;
+
+    fetch("http://localhost:5500/db_api/register_user", {
+      method: "POST",
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        email,
+        password,
+        fname: firstName,
+        lname: lastName
+      })
+    })
+    .then(response => response.json())
+    .then(() => {
+      navigate('/');
+    })
+    .catch(error => {
+      console.log(error);
+    });
   };
 
   return (
-    <Box
-      display="flex"
-      justifyContent="center"
-      alignItems="center"
-      height="100vh"
-      bgcolor="#f5f5f5"
-      sx={{fontFamily:'Roboto'}}
-    >
-      <Paper
-        elevation={3}
-        sx={{
-          padding: 4,
-          width: 400,
-          borderRadius: 3,
-          boxShadow: 3,
-          bgcolor: 'white',
-          textAlign: 'center',
-        }}
-      >
+    <Box className="register-container">
+      <Paper className="register-paper">
         <Typography variant="h4" color="black" fontWeight="bold">
           Create a new account
         </Typography>
@@ -43,24 +59,28 @@ const Register = () => {
           It's quick and easy.
         </Typography>
         <form onSubmit={handleSubmit}>
-          <TextField
-            label="First Name"
-            type="firstName"
-            variant="filled"
-            fullWidth
-            margin="normal"
-            value={firstName}
-            onChange={(e) => setFirstName(e.target.value)}
-          />
-          <TextField
-            label="Last Name"
-            type="lastName"
-            variant="filled"
-            fullWidth
-            margin="normal"
-            value={lastName}
-            onChange={(e) => setLastName(e.target.value)}
-          />
+          <Box className="register-input-group">
+            <TextField
+              label="First Name"
+              variant="outlined"
+              fullWidth
+              margin="normal"
+              value={firstName}
+              onChange={(e) => setFirstName(e.target.value)}
+              error={!!errors.firstName}
+              className="register-input"
+            />
+            <TextField
+              label="Last Name"
+              variant="outlined"
+              fullWidth
+              margin="normal"
+              value={lastName}
+              onChange={(e) => setLastName(e.target.value)}
+              error={!!errors.lastName}
+              className="register-input"
+            />
+          </Box>
           <TextField
             label="Email"
             type="email"
@@ -69,6 +89,8 @@ const Register = () => {
             margin="normal"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            error={!!errors.email}
+            className="register-input"
           />
           <TextField
             label="Password"
@@ -78,29 +100,22 @@ const Register = () => {
             margin="normal"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            error={!!errors.password}
+            className="register-input"
           />
 
-         <Typography variant="caption" color="grey" fontStyle="oblique"> You may receive SMS Notifications from us and can opt out any time. </Typography>
+          <Typography variant="caption" className="register-caption">
+            You may receive SMS Notifications from us and can opt out any time.
+          </Typography>
 
-          <Box sx={{ textAlign: 'center', width: '45%', margin: '0 auto' }}>
-            <Button
-              type="submit"
-              variant="contained"
-              fullWidth
-              sx={{
-                marginTop: 2,
-                backgroundColor: '#00a400',
-                color: 'white',
-                fontWeight: 'bold',
-                borderRadius:'8px'
-              }}
-            >
+          <Box sx={{ textAlign: 'center', width: '60%', margin: '0 auto' }}>
+            <Button type="submit" variant="contained" fullWidth className="register-button">
               Sign Up
             </Button>
 
-            <Typography variant="body2" sx={{ marginTop: 2 }}>
+            <Typography variant="body2" className="register-link">
               <Link to={`/login`} underline="hover">
-                Already have an account?{' '}
+                Already have an account?
               </Link>
             </Typography>
           </Box>

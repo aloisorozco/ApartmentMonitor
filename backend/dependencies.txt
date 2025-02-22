@@ -2,4 +2,7 @@ firecloud
 firebase-admin
 flask
 flask-cors
-
+beautifulsoup4
+aiohttp
+asyncio
+apscheduler

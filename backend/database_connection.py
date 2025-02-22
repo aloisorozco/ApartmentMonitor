@@ -2,7 +2,7 @@ import firebase_admin
 from firebase_admin import credentials, firestore
 
 # Initialize Firebase
-cred = credentials.Certificate('C:\\Users\\cszty\\Downloads\\cred.json')
+cred = credentials.Certificate('cred.json')
 firebase_admin.initialize_app(cred)
 db = firestore.client()
 
@@ -18,11 +18,14 @@ def create_user(fname, lname, email, password_hashed):
     return user_ref[1].id  # Returns the generated user ID
 
 # Function to create an apartment listing
-def create_apartment(price, location, description):
+def create_apartment(price, price_target, location, description, image_link):
     apartment_ref = db.collection('apartments').add({
-            "price": 0,
-            "price_target": 0,
-            "description": ""
+            "price": price,
+            "price_target": price_target,
+            "location" : location,
+            "description": description,
+            "image_link" : image_link
+            
     })
     return apartment_ref[1].id  # Returns the generated listing ID
 
@@ -40,7 +43,7 @@ def add_to_watchlist(user_id, apartment_id):
 
 # Example Usage:
 user_id = create_user("Test", "User", "john@example.com", "hashedpassword")
-apartment_id = create_apartment(0, "Example Location", "Example Description")
+apartment_id = create_apartment(9999, 1111, "123 Test Ave", "Example Description", "https://www.applesfromny.com/wp-content/uploads/2020/05/20Ounce_NYAS-Apples2.png")
 
 # User adds the apartment to their watchlist
 add_to_watchlist(user_id, apartment_id)

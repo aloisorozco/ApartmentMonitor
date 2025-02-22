@@ -6,3 +6,6 @@ frontend/package-lock.json
 backend/__pycache__/server.cpython-313.pyc
 backend/cred.json
 backend/__pycache__/server.cpython-313.pyc
+/backend/__pycache__
+backend/email_cred.json
+backend/proxy_cred.json
