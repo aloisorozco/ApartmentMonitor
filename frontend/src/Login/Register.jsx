@@ -84,7 +84,7 @@ const Register = () => {
           <TextField
             label="Email"
             type="email"
-            variant="outlined"
+            variant="filled"
             fullWidth
             margin="normal"
             value={email}
@@ -95,7 +95,7 @@ const Register = () => {
           <TextField
             label="Password"
             type="password"
-            variant="outlined"
+            variant="filled"
             fullWidth
             margin="normal"
             value={password}
