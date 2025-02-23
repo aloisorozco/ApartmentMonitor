@@ -38,9 +38,43 @@ class Server():
     scheduler = BackgroundScheduler()
     scheduler.start()
 
-    @scheduler.scheduled_job(IntervalTrigger(seconds=5))
-    def begin_scraping():
-        print("Chance implement this")
+    @scheduler.scheduled_job(IntervalTrigger(minutes=1))
+    def scheduled_scraping():
+
+        # apartment_ref = Server.db.collection("apartments").document("67374291-5b69-4fe1-b1f2-ad9e1597375f")
+        # apartment_snap = apartment_ref.get()
+        
+        # if apartment_snap.exists:
+        #     print("\tHas apartment: " 
+        #     + apartment_snap.get("description") + " in their watchlist")
+
+        users_ref = Server.db.collection('users')
+        users_snap = users_ref.stream()
+
+        for user_snap in users_snap:
+            # print("User: "+user_snap.get("email"))
+
+            watchlist_ref = Server.db.collection('users').document(user_snap.id).collection('watchlist')
+            watchlist_snap = watchlist_ref.stream()
+
+            if watchlist_snap:
+                for watchlist_item in watchlist_snap:
+                    apartment_id = watchlist_item.id
+
+                    apartment_ref = Server.db.collection("apartments").document(apartment_id)
+                    apartment_snap = apartment_ref.get()
+                    if apartment_snap.exists:
+                        # print("\tHas apartment: " 
+                        #         + apartment_snap.get("description") + " in their watchlist")
+                        url = apartment_snap.get(url)
+                        if url:
+                            listing_data = Server.ws.websrcape_url_premium_proxies(url)
+                            price_curr = listing_data.get('price')
+                            if price_curr != apartment_snap.get("price"):
+                                Server.update_listing(apartment_id, price_curr)
+                        
+                
+
 
     def hash_data(data):
         return hashlib.sha256(data.encode()).hexdigest()
@@ -67,41 +101,6 @@ class Server():
         response.status_code = 200 
         return response
     
-    
-    # todo TO TEST
-    @app.route('/db_api/update_listing', methods=['GET'])
-    def update_listing(listing_id, price):
-            # Query all users
-        users_ref = Server.db.collection('users')
-        users_snap = users_ref.stream()
-        apartment_ref = Server.db.collection("apartments").document(listing_id)
-        apartment_snap = apartment_ref.get()
-        if apartment_snap.exists:
-            if price <= int(apartment_snap.get("price_target")):
-                # print("Apartment "+str(listing_id)+" has dropped in price to "+str(price)+" which is below the target price of "+str(apartment_snap.get("price_target")))
-                # Iterate over each user
-                for user_doc in users_snap:
-                    user_id = user_doc.id
-                    # Query the user's watchlist to see if the apartment is there
-                    watchlist_ref = Server.db.collection('users').document(user_id).collection('watchlist')
-                    watchlist_snap = watchlist_ref.stream()
-
-                    for watchlist_item in watchlist_snap:
-                        apartment_id = watchlist_item.id
-                        if apartment_id == listing_id:
-                            print("Apartment "+str(listing_id)+" found in watchlist of user "+str(user_id))
-                            subject = "Price Drop Alert!"
-                            body = "The appartment: "+str(apartment_snap.get("description")+" has dropped below target price!")
-                            Server.send_email(user_doc.get("email"), subject, body)
-
-        apartment_ref.update({"price" : price})
-        print("Sent mail to "+receiver_email)
-
-        response = jsonify({})
-        response.status_code = 200
-        return response
-    
-    
     # TODO: TO TEST
     @app.route('/db_api/update_listing', methods=['GET'])
     def update_listing(listing_id, price):
@@ -125,7 +124,7 @@ class Server():
                         if apartment_id == listing_id:
                             print("Apartment "+str(listing_id)+" found in watchlist of user "+str(user_id))
                             subject = "Price Drop Alert!"
-                            body = "The appartment: "+str(apartment_snap.get("description")+" has dropped below target price!")
+                            body = "The apartment: "+str(apartment_snap.get("description")+" has dropped below target price!")
                             Server.send_email(user_doc.get("email"), subject, body)
 
         apartment_ref.update({"price" : price})
