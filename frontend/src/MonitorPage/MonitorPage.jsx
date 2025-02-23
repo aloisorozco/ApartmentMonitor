@@ -9,7 +9,7 @@ export default function MonitorPage() {
   const { userEmail } = useAuth()
 
   useEffect(() => {
-    fetch(`http://localhost:5500/db_api/fetch_watchlist?email=a`, {
+    fetch(`http://localhost:5500/db_api/fetch_watchlist?email=${userEmail}`, {
       method: "GET",
       headers : { 'Content-Type' : 'application/json'},
       data : {}
@@ -17,9 +17,25 @@ export default function MonitorPage() {
     .then(res => res.json())
     .then(data => {
       console.log(data)
+      let listings_fetched = data.listings.map((listing) => {
+        return {
+          id: listing.listing_id,
+          title: listing.location,
+          url: listing.url,
+          targetPrice: listing.price_target,
+          currentPrice: listing.price,
+        }
+      })
+      // This should cause the table re-render and set all items in the user watchlist
+      setApartmentListings([
+        ...apartmentListings,
+        ...listings_fetched
+      ])
     })
     .catch(error => console.log(error))
-  })
+    // passing empty array here so useEffect is called once on mount, and never again - without this we are in a infinite render loop
+    // since we fetch listings, set state, and then re-render causing another fetch listing, and set state and so on
+  }, []) 
 
   return (
     <Box sx={{ flexGrow: 1 }}>

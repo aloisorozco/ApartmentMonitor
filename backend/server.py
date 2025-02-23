@@ -110,7 +110,6 @@ class Server():
 
     @app.route('/db_api/fetch_watchlist', methods=['GET'])
     def fetch_watchlist():
-        print("fetch good")
         email =  request.args.get('email')
         email_hash = Server.hash_data(email)
         watchlist = Server.db.collection('users').document(email_hash).collection('watchlist').get()
@@ -118,7 +117,7 @@ class Server():
         response.status_code = 200
 
         if len(watchlist) > 0:
-            listings = {}
+            listings = []
             # querry each listing info - each listing is a DocumentSnapshot object from user - we need to requery each one
             # TODO: see if we did not mess up in our db design here, seems wierd we need to requerry so much
             for listing in watchlist:
@@ -127,7 +126,7 @@ class Server():
                 # doing .get() on the document referance -> gets the document snapshot itself; need to check if object itself exists in db or not
                 listing_doc = Server.db.collection('apartments').document(listing_id).get()
                 if listing_doc.exists:
-                    listings[listing_id] = listing_doc.to_dict()
+                    listings.append(listing_doc.to_dict())
 
                 
             response = jsonify({"listings" : listings})
@@ -143,7 +142,6 @@ class Server():
 
         price_target = data.get('target_price')
         url = data.get('url')
-        url = data.get('url')
 
         try:
             # Web scrape
@@ -151,7 +149,7 @@ class Server():
             price_curr = listing_data.get('price')
             desc = listing_data.get('title')
             location = listing_data.get('location')
-            image_link = listing_data.get('image_link')
+            image_link = listing_data.get('images')
 
         except Exception as e:
             print(f'[ERROR] error when parsing: {e}')
