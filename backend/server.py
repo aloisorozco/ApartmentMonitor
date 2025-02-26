@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, current_app
 import hashlib
 import uuid
 from flask_cors import CORS
@@ -39,9 +39,39 @@ class Server():
     scheduler = BackgroundScheduler()
     scheduler.start()
 
-    @scheduler.scheduled_job(IntervalTrigger(seconds=5))
-    def begin_scraping():
-        print("Chance implement this")
+    @scheduler.scheduled_job(IntervalTrigger(minutes=1))
+    def scheduled_scraping():
+        with Server.app.app_context():
+
+
+            users_ref = Server.db.collection('users')
+            users_snap = users_ref.stream()
+
+            for user_snap in users_snap:
+                # print("User: "+user_snap.get("email"))
+
+                watchlist_ref = Server.db.collection('users').document(user_snap.id).collection('watchlist')
+                watchlist_snap = watchlist_ref.stream()
+
+                if watchlist_snap:
+                    for watchlist_item in watchlist_snap:
+                        apartment_id = watchlist_item.id
+
+                        apartment_ref = Server.db.collection("apartments").document(apartment_id)
+                        apartment_snap = apartment_ref.get()
+                        if apartment_snap.exists:
+                            # print("\tHas apartment: " 
+                            #         + apartment_snap.get("description") + " in their watchlist")
+                            url = apartment_snap.get("url")
+                            if url:
+                                listing_data = Server.ws.websrcape_url_premium_proxies(url)
+                                price_curr = float(listing_data.get('price'))
+                                if price_curr != float(apartment_snap.get("price")):
+                                    Server.update_listing(apartment_id, price_curr)
+                                    # print("Updated Listing for "+apartment_id)
+                        
+                
+
 
     def hash_data(data):
         return hashlib.sha256(data.encode()).hexdigest()
@@ -64,50 +94,43 @@ class Server():
         mail_server.sendmail(Server.email_address,
                              receiver_email, msg.as_string())  # Send email
 
-        print("Sent mail to "+receiver_email)
-
         response = jsonify({})
-        response.status_code = 200
+        response.status_code = 200 
         return response
-
     # TODO: TO TEST
 
     @app.route('/db_api/update_listing', methods=['GET'])
     def update_listing(listing_id, price):
-        # Query all users
-        users_ref = Server.db.collection('users')
-        users_snap = users_ref.stream()
-        apartment_ref = Server.db.collection("apartments").document(listing_id)
-        apartment_snap = apartment_ref.get()
-        if apartment_snap.exists:
-            if price <= int(apartment_snap.get("price_target")):
-                # print("Apartment "+str(listing_id)+" has dropped in price to "+str(price)+" which is below the target price of "+str(apartment_snap.get("price_target")))
-                # Iterate over each user
-                for user_doc in users_snap:
-                    user_id = user_doc.id
-                    # Query the user's watchlist to see if the apartment is there
-                    watchlist_ref = Server.db.collection(
-                        'users').document(user_id).collection('watchlist')
-                    watchlist_snap = watchlist_ref.stream()
+        with current_app.app_context():
+            # Query all users
+            users_ref = Server.db.collection('users')
+            users_snap = users_ref.stream()
+            apartment_ref = Server.db.collection("apartments").document(listing_id)
+            apartment_snap = apartment_ref.get()
+            if apartment_snap.exists:
+                if price <= int(apartment_snap.get("price_target")):
+                    # print("Apartment "+str(listing_id)+" has dropped in price to "+str(price)+" which is below the target price of "+str(apartment_snap.get("price_target")))
+                    # Iterate over each user
+                    for user_doc in users_snap:
+                        user_id = user_doc.id
+                        # Query the user's watchlist to see if the apartment is there
+                        watchlist_ref = Server.db.collection('users').document(user_id).collection('watchlist')
+                        watchlist_snap = watchlist_ref.stream()
 
-                    for watchlist_item in watchlist_snap:
-                        apartment_id = watchlist_item.id
-                        if apartment_id == listing_id:
-                            print("Apartment "+str(listing_id) +
-                                  " found in watchlist of user "+str(user_id))
-                            subject = "Price Drop Alert!"
-                            body = "The appartment: " + \
-                                str(apartment_snap.get("description") +
-                                    " has dropped below target price!")
-                            Server.send_email(
-                                user_doc.get("email"), subject, body)
+                        for watchlist_item in watchlist_snap:
+                            apartment_id = watchlist_item.id
+                            if apartment_id == listing_id:
+                                print("Apartment "+str(listing_id)+" found in watchlist of user "+str(user_id))
+                                subject = "Price Drop Alert!"
+                                body = "The apartment: "+str(apartment_snap.get("description")+" has dropped below target price!")
+                                Server.send_email(user_doc.get("email"), subject, body)
 
-        apartment_ref.update({"price": price})
+            apartment_ref.update({"price" : price})
 
-        response = jsonify({"ok": "item updated"})
-        response.status_code = 200
-        return response
-
+            response = jsonify({"ok": "item updated"})
+            response.status_code = 200
+            return response
+        
     @app.route('/db_api/fetch_watchlist', methods=['GET'])
     def fetch_watchlist():
         email =  request.args.get('email')
@@ -238,9 +261,8 @@ class Server():
 
     @app.route('/db_api/auth_user', methods=['POST'])
     def auth_user():
-        data = request.get_json()
-        password = data.get('password')
-        email = data.get('email')
+        password = request.form.get('password')
+        email = request.form.get('email')
 
         enterred_password = Server.hash_data(password)
         enterred_email = Server.hash_data(email)
