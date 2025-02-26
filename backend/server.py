@@ -42,12 +42,6 @@ class Server():
     def scheduled_scraping():
         with Server.app.app_context():
 
-            # apartment_ref = Server.db.collection("apartments").document("67374291-5b69-4fe1-b1f2-ad9e1597375f")
-            # apartment_snap = apartment_ref.get()
-            
-            # if apartment_snap.exists:
-            #     print("\tHas apartment: " 
-            #     + apartment_snap.get("description") + " in their watchlist")
 
             users_ref = Server.db.collection('users')
             users_snap = users_ref.stream()
@@ -73,7 +67,7 @@ class Server():
                                 price_curr = float(listing_data.get('price'))
                                 if price_curr != float(apartment_snap.get("price")):
                                     Server.update_listing(apartment_id, price_curr)
-                                    print("Updated Listing for "+apartment_id)
+                                    # print("Updated Listing for "+apartment_id)
                         
                 
 
