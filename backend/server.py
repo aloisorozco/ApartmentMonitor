@@ -39,7 +39,7 @@ class Server():
     scheduler = BackgroundScheduler()
     scheduler.start()
 
-    @scheduler.scheduled_job(IntervalTrigger(minutes=1))
+    @scheduler.scheduled_job(IntervalTrigger(minutes=1000000))
     def scheduled_scraping():
         with Server.app.app_context():
 
@@ -100,7 +100,32 @@ class Server():
     # TODO: TO TEST
 
     @app.route('/db_api/update_listing', methods=['GET'])
-    def update_listing(listing_id, price):
+    def update_listing():
+
+        listing_id = ""
+        price = 0.0
+
+        try:
+            listing_id = request.args.get('listing_id')
+            price = float(request.args.get('price'))
+
+            if len(listing_id) == 0:
+                raise Exception("listing ID is empty")
+        except ValueError as e:
+            print(f'[ERROR] error when updating listing: {e}')
+            response = jsonify({})
+            response.status_code = 500
+            return response
+        
+        # this is caused when user input is invalid
+        except Exception as e:
+            print(f'[ERROR] error when updating listing: {e}')
+            response = jsonify({})
+            response.status_code = 400
+            return response
+
+
+        print(listing_id)
         with current_app.app_context():
             # Query all users
             users_ref = Server.db.collection('users')
@@ -108,7 +133,7 @@ class Server():
             apartment_ref = Server.db.collection("apartments").document(listing_id)
             apartment_snap = apartment_ref.get()
             if apartment_snap.exists:
-                if price <= int(apartment_snap.get("price_target")):
+                if price <= float(apartment_snap.get("price_target")):
                     # print("Apartment "+str(listing_id)+" has dropped in price to "+str(price)+" which is below the target price of "+str(apartment_snap.get("price_target")))
                     # Iterate over each user
                     for user_doc in users_snap:
@@ -125,8 +150,8 @@ class Server():
                                 body = "The apartment: "+str(apartment_snap.get("description")+" has dropped below target price!")
                                 Server.send_email(user_doc.get("email"), subject, body)
 
-            apartment_ref.update({"price" : price})
-
+            # updating the target price - not the real price of the listing
+            apartment_ref.update({"price_target" : price})
             response = jsonify({"ok": "item updated"})
             response.status_code = 200
             return response
@@ -163,13 +188,13 @@ class Server():
         email = data.get('email')
         email_hash = Server.hash_data(email)
 
-        price_target = data.get('target_price')
+        price_target = float(data.get('target_price'))
         url = data.get('url')
 
         try:
             # Web scrape
             listing_data = Server.ws.websrcape_url_premium_proxies(url)
-            price_curr = listing_data.get('price')
+            price_curr = float(listing_data.get('price'))
             desc = listing_data.get('title')
             location = listing_data.get('location')
             image_link = listing_data.get('images')
@@ -209,13 +234,12 @@ class Server():
 
     @app.route('/db_api/remove_listing', methods=['DELETE'])
     def remove_listing():
-        data = request.get_json()
-        email = data.get('fname')
+        email = request.args.get('email')
+        listing_id = request.args.get('listing_id')
         email_hash = Server.hash_data(email)
-        listing_id = data.get('listing_id')
 
-        watchlist_ref = Server.db.collection('users').document(
-            email_hash).collection('watchlist')
+        # TODO: check that listing exists before removing it lol
+        watchlist_ref = Server.db.collection('users').document(email_hash).collection('watchlist')
         watchlist_ref.document(listing_id).delete()
         Server.db.collection('apartments').document(listing_id).delete()
 
@@ -261,8 +285,8 @@ class Server():
 
     @app.route('/db_api/auth_user', methods=['POST'])
     def auth_user():
-        password = request.form.get('password')
-        email = request.form.get('email')
+        password = request.json.get('password')
+        email = request.json.get('email')
 
         enterred_password = Server.hash_data(password)
         enterred_email = Server.hash_data(email)
