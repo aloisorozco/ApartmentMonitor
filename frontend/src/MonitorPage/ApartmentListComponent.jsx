@@ -37,7 +37,7 @@ export default function ApartmentListComponent(props) {
               sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
             >
               <TableCell component="th" scope="row">
-                {apartmentListing.title}
+                {`${apartmentListing.title} - ${apartmentListing.id}`}
               </TableCell>
               <TableCell align="right">{apartmentListing.targetPrice}</TableCell>
               <TableCell align="right">{apartmentListing.currentPrice}</TableCell>
