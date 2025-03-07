@@ -29,9 +29,11 @@ export default function ApartmentListComponent(props) {
           </TableRow>
         </TableHead>
         <TableBody>
+          {/* does this re-render all appartment listings again on the add? */}
           {apartmentListings.map((apartmentListing) => (
             <TableRow
-              key={apartmentListing.title}
+              // Change this to the ID
+              key={apartmentListing.id}
               sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
             >
               <TableCell component="th" scope="row">

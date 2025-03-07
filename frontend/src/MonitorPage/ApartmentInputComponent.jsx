@@ -3,25 +3,46 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
 import { isEmpty } from 'lodash';
+import { useAuth } from '../AuthContext';
 
 export default function ApartmentInputComponent(props) {
   const [url, setUrl] = useState('');
+  const { userEmail } = useAuth();
   const { apartmentListings, setApartmentListings } = props;
 
   const handleAdd = () => {
     if (isEmpty(url)) {
       return;
     }
-    setApartmentListings([
-      ...apartmentListings,
-      {
-        title: url,
-        url: url,
-        targetPrice: 600,
-        currentPrice: 900,
-      },
-    ]);
-    setUrl('');
+
+    let email = userEmail
+    let targetPrice =  600
+    
+    fetch("http://localhost:5500/db_api/save_listing", {
+      method: "POST",
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: email, target_price : targetPrice, url: url})
+    })
+      .then(response => {
+        if (response.ok) {
+          return response.json()
+        } else {
+          console.log("Invalid Credentials");
+        }
+      }).then(data => {
+        setApartmentListings([
+          ...apartmentListings,
+          { 
+            // set here the img + description
+            title: data.location,
+            url: url,
+            targetPrice: 600,
+            currentPrice: data.price,
+          },
+        ]);
+        setUrl('');
+      })
+      .catch(error => console.log(error));
   };
 
   return (
