@@ -24,6 +24,7 @@ export default function MonitorPage() {
           url: listing.url,
           targetPrice: listing.price_target,
           currentPrice: listing.price,
+          image: listing.image_link,
         }
       })
       // This should cause the table re-render and set all items in the user watchlist
