@@ -40,7 +40,7 @@ export default function MonitorPage() {
   return (
     <Box sx={{ flexGrow: 1 }}>
       <ApartmentInputComponent apartmentListings={apartmentListings} setApartmentListings={setApartmentListings} />
-      <ApartmentListComponent apartmentListings={apartmentListings} />
+      <ApartmentListComponent apartmentListings={apartmentListings} setApartmentListings={setApartmentListings}/>
     </Box>
   );
 }
