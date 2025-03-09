@@ -8,23 +8,27 @@ import asyncio
 import ssl
 import queue
 from proxy import Proxy
-import re
+import threading
 
 # TODO: make thread safe in the future - should be easy since we always juggle only one instance - in the futre we may need many insance for many users
 # interacting with a share proxy list
 
-# TODO: make dunder new and dunder init thread safe (use mutex)
 class WebScraper:
   
   _HEADERS = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36"}
 
   _sngleton_instance = None
+  _creation_mutex = threading.Lock()
+  _refetching_proxies_mutex = threading.Lock()
 
   # dunder new is called at object creation (before dunder init) - here we are using dunder new to make a singleton instance
   # cls = class type where __new__ is FIRST called
   def __new__(cls):
+    WebScraper._creation_mutex.acquire()
     if cls._sngleton_instance is None:
       cls._sngleton_instance = super().__new__(cls) 
+    else:
+      WebScraper._creation_mutex.re()
     
     return cls._sngleton_instance # we MUST return an instance - otherwise init wont be called
   
@@ -33,19 +37,23 @@ class WebScraper:
       return
     
     self._has_init = True
-    self._proxy_list = queue.Queue()
+    self._proxy_list = queue.Queue() # thread safe by defualt (multi consumer/producer implemnetation) - so no need to implement locks for the queue :)
 
     self._proxy_scraper = ProxyScraper()
 
     self._ssl_ctx = ssl.create_default_context()
     self._ssl_ctx.check_hostname = False
     self._ssl_ctx.verify_mode = ssl.CERT_NONE
+    self._proxies_refresh_counter = 0
     
     with open("proxy_cred.json") as f:
       data = json.load(f)  
       self._token = data["token"]
 
     self._get_premium_proxies() # populate premium proxies list
+
+    # release the lock the first ever thread captured - the __init__ will never be called after the first thread
+    WebScraper._creation_mutex.release()
 
   # need to find a way to auto rotate the proxies once in a while - maybe a counter since its a singleton?
   def _get_premium_proxies(self):
@@ -58,15 +66,34 @@ class WebScraper:
 
   # scraping with premium proxies - one by one, TODO: for not its ok, but in the future we need to find a way to manage concurency
   def websrcape_url_premium_proxies(self, target_url):
+    
+    print(f'[LOG] Thread {threading.currentThread().getName()} webscraping')
 
     # Iterate over all proxies - return on first working proxy result
     for _ in range(self._proxy_list.qsize()):
-      
-      proxy = self._proxy_list.get()
-      print(f'using proxie: {proxy}')
-
+    
+      proxy = None
       try:
-        result = requests.get(url=target_url, proxies=proxy.proxy_formatted())      
+        proxy = self._proxy_list.get(block=True, timeout=5)
+        print(f'[LOG] using proxie: {proxy}')
+
+        # increment the proxy counter, and after 100 proxy request refresh the proxy list.
+        with WebScraper._refetching_proxies_mutex:
+          self._proxies_refresh_counter += 1
+          if self._proxies_refresh_counter >= 100:
+
+            print('[LOG] Refreshing proxies')
+            self._get_premium_proxies()
+
+            self._proxies_refresh_counter = 0
+
+      except queue.Empty:
+        raise Exception(f'[ERROR] Could not get any free proxies for {threading.currentThread().getName()}')
+      except Exception as e:
+        raise Exception(f'[ERROR] Thread {threading.currentThread().getName()} caused an issue: {e}')
+      
+      try:
+        result = requests.get(url=target_url, headers=WebScraper._HEADERS, proxies=proxy.proxy_formatted())      
         doc = BeautifulSoup(result.text, "html.parser")
 
         # pattern = re.compile(r'slideList')
@@ -101,6 +128,7 @@ class WebScraper:
     
     raise Exception("Ran out of proxies when parsing (time to ball out and buy our own proxies)")
 
+  # ---- LEGACY CODE ---- NOT THREAD SAFE
   # bad proxies - keep it in cases we need to rotate/ test bad proxies
   def websrcape_url_scrape_proxies(self, target_url):
     
@@ -121,7 +149,6 @@ class WebScraper:
       }
     except Exception as e:
       print(f'Error occurred while scraping url: {e}')
-  
 
   async def _fetch_listing_data(self, proxies, url):
     # disabling SSL for now

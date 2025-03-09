@@ -238,8 +238,9 @@ class Server():
         listing_id = request.args.get('listing_id')
         email_hash = Server.hash_data(email)
 
-        # TODO: check that listing exists before removing it lol
         watchlist_ref = Server.db.collection('users').document(email_hash).collection('watchlist')
+
+        # no need to check if listing exists - delete() does nothing if the listing does not exist.
         watchlist_ref.document(listing_id).delete()
         Server.db.collection('apartments').document(listing_id).delete()
 
