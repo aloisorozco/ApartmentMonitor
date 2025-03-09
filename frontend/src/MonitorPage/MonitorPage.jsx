@@ -24,6 +24,7 @@ export default function MonitorPage() {
           url: listing.url,
           targetPrice: listing.price_target,
           currentPrice: listing.price,
+          image: listing.image_link,
         }
       })
       // This should cause the table re-render and set all items in the user watchlist
@@ -40,7 +41,7 @@ export default function MonitorPage() {
   return (
     <Box sx={{ flexGrow: 1 }}>
       <ApartmentInputComponent apartmentListings={apartmentListings} setApartmentListings={setApartmentListings} />
-      <ApartmentListComponent apartmentListings={apartmentListings} />
+      <ApartmentListComponent apartmentListings={apartmentListings} setApartmentListings={setApartmentListings}/>
     </Box>
   );
 }

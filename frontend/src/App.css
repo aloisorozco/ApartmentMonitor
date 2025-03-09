@@ -2,7 +2,6 @@ html, body, #root {
   margin: 0;
   padding: 0;
   height: 100vh;
-  overflow: hidden; 
   display: flex;
   flex-direction: column;
 }
@@ -12,6 +11,11 @@ html, body, #root {
   flex-direction: column;
   flex-grow: 1;
   text-align: center;
+  overflow-x: hidden;
+}
+
+.App.no-scroll {
+  overflow-y: hidden;
 }
 
 
