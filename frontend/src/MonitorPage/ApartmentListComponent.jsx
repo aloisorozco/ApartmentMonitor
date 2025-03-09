@@ -1,51 +1,72 @@
 import React from 'react';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableContainer from '@mui/material/TableContainer';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
-import Paper from '@mui/material/Paper';
-import Link from '@mui/material/Link';
+import { Box, Card, CardContent, CardMedia, Typography, IconButton, Button, Grid, Grid2 } from '@mui/material';
+import DeleteIcon from '@mui/icons-material/Delete';
+import { useAuth } from '../AuthContext';
 
-import {isNil} from "lodash";
+export default function ApartmentListComponent({ apartmentListings, setApartmentListings }) {
+  const { userEmail } = useAuth();
 
-export default function ApartmentListComponent(props) {
-  const {apartmentListings} = props;
+  const handleDelete = (listingId) => {
+    fetch(`http://localhost:5500/db_api/remove_listing?email=${userEmail}&listing_id=${listingId}`, {
+      method: "DELETE",
+      headers: { 'Content-Type': 'application/json' },
+    })
+    .then(response => {
+      if (response.ok) {
+        setApartmentListings(prevListings => prevListings.filter(listing => listing.id !== listingId));
+      } else {
+        console.log("Error deleting the listing");
+      }
+    })
+    .catch(error => console.log("Error:", error));
+  };
 
-  if (isNil(apartmentListings) || apartmentListings.length === 0) {
-    return null;
+  if (apartmentListings.length === 0) {
+    return <Typography align="center" variant="h6" sx={{ mt: 4 }}>No listings found.</Typography>;
   }
-  
+
   return (
-    <TableContainer component={Paper}>
-      <Table sx={{ minWidth: 650 }} aria-label="simple table">
-        <TableHead>
-          <TableRow>
-            <TableCell>Title</TableCell>
-            <TableCell align="right">Target Price</TableCell>
-            <TableCell align="right"> Current Price</TableCell>
-            <TableCell align="right">URL</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {/* does this re-render all appartment listings again on the add? */}
-          {apartmentListings.map((apartmentListing) => (
-            <TableRow
-              // Change this to the ID
-              key={apartmentListing.id}
-              sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-            >
-              <TableCell component="th" scope="row">
-                {`${apartmentListing.title} - ${apartmentListing.id}`}
-              </TableCell>
-              <TableCell align="right">{apartmentListing.targetPrice}</TableCell>
-              <TableCell align="right">{apartmentListing.currentPrice}</TableCell>
-              <TableCell align="right"><Link href={apartmentListing.url}>Listing</Link></TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </TableContainer>
+    <Box sx={{ p: 2, display: "flex", justifyContent: "center" }}>
+      <Grid2 container spacing={3} justifyContent="center">
+        {apartmentListings.map((listing) => (
+          <Grid2 item xs={12} sm={6} md={4} lg={3} key={listing.id}>
+            <Card sx={{ width: "100%", borderRadius: 4, boxShadow: 3, overflow: "hidden" }}>
+              <CardMedia
+                component="img"
+                height="200"
+                width="100%"
+                image={listing.image}
+                alt={listing.title}
+                sx={{ objectFit: "cover" }}
+              />
+              <CardContent >
+                <Typography variant="h6" fontWeight="bold">{listing.title}</Typography>
+                <Typography color="text.secondary" fontSize={14}>ID: {listing.id}</Typography>
+                <Typography variant="body1" sx={{ mt: 1 }}>
+                  💰 <b>Target Price:</b> ${listing.targetPrice}
+                </Typography>
+                <Typography variant="body1">
+                  🔥 <b>Current Price:</b> ${listing.currentPrice}
+                </Typography>
+                <Box sx={{ mt: 2, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <Button
+                    variant="contained"
+                    size="small"
+                    href={listing.url}
+                    target="_blank"
+                    sx={{ backgroundColor: "#1976d2", color: "white" }}
+                  >
+                    View Listing
+                  </Button>
+                  <IconButton onClick={() => handleDelete(listing.id)} color="error">
+                    <DeleteIcon />
+                  </IconButton>
+                </Box>
+              </CardContent>
+            </Card>
+          </Grid2>
+        ))}
+      </Grid2>
+    </Box>
   );
 }
