@@ -11,6 +11,8 @@ from proxy import Proxy
 import re
 from urllib.parse import urlparse
 from urllib.parse import urljoin
+from selenium import webdriver
+from selenium.webdriver.common.by import By
 
 # TODO: make thread safe in the future - should be easy since we always juggle only one instance - in the futre we may need many insance for many users
 # interacting with a share proxy list
@@ -97,36 +99,35 @@ class WebScraper:
         # Put back the proxy at the end of queue - rotating
         self._proxy_list.put(proxy)
 
-        # TODO: figure out how to websrape the whole carousel
-
         # kamernet does something similar to marketplace to prevent webscraping so if this looks a little weird its because I couldnt directly find an element
         return {
             "url": target_url,
             "title": doc.find('title').string.split('|')[0],
             "price": doc.select('div[class*="PropertyDetails_price"]')[0].find("h6").string[2:].replace('.', ''),
             "location": doc.select('div[class*="Header_details"]')[0].find("a").string,
-            "images": urljoin(target_url, doc.select('section[class*="Gallery_root"]')[0].find("img").get("src"))
+            "images": urljoin(target_url, doc.select('section[class*="Gallery_root"]')[0].find("img").get("src")) # TODO: replace what we have with the following: self.webscrape_kamernet_images(target_url, proxy)
         }
+    
+    def webscrape_kamernet_images(self, target_url, proxy):
+        # TODO: integrate proxy rotation
+        driver = webdriver.Firefox()
+        driver.get(target_url)
+
+        driver.find_element(By.XPATH, '//button[contains(@class,"Gallery_button")]').click()
+        doc = BeautifulSoup(driver.page_source)
+
+        images = []
+        for img_container in doc.select('div[class*="Lightbox_imageWrapper"]'):
+            images.append(urljoin(target_url, img_container.find("img").get("src")))
+
+        driver.quit()
+        return images
     
     def webscrape_kijiji_page(self, target_url, proxy):
         result = requests.get(
                     url=target_url, proxies=proxy.proxy_formatted(), headers=WebScraper._HEADERS)
         doc = BeautifulSoup(result.text, "html.parser")
 
-        # pattern = re.compile(r'slideList')
-        # # For now we get just the main immage - TODO: figure out how to webscrape the whole carousel
-        # # kijiji uses an IFrame, so may be more difficult as we need to simulate a click
-
-        # carousel = doc.find_all('ul', class_=pattern)
-        # print(carousel)
-        # listing_images = []
-        # if carousel:
-        #   list_items = carousel.find_all('li')
-        #   for item in list_items:
-        #     img = item.find("img", {"itemprop" : "image"}).get("src")
-        #     listing_images.append(img)
-
-        # Put back the proxy at the end of queue - rotating
         self._proxy_list.put(proxy)
 
         return {
@@ -134,8 +135,24 @@ class WebScraper:
             "title": doc.find("h1", {"itemprop": "name"}).string,
             "price": doc.find("span", {"itemprop": "price"}).get("content"),
             "location": doc.find("span", {"itemprop": "address"}).get_text(),
-            "images": doc.find("div", {"class": "mainImage"}).find("img", {"itemprop": "image"}).get("src"),
+            "images": doc.find("div", {"class": "mainImage"}).find("img", {"itemprop": "image"}).get("src") # TODO: replace what we have with the following: self.webscrape_kijiji_images(target_url, proxy)
         }
+    
+    def webscrape_kijiji_images(self, target_url, proxy):
+        # TODO: integrate proxy rotation
+        driver = webdriver.Firefox()
+        driver.get(target_url)
+
+        driver.find_element(By.XPATH, '//div[contains(@class,"generalOverlay")]').click()
+        doc = BeautifulSoup(driver.page_source)
+
+        images = []
+        images_container = doc.select('ul[class*="slideList"]')[0]
+        for img in images_container.find_all('img'):
+            images.append(img.get("src"))
+
+        driver.quit()
+        return images
 
     # bad proxies - keep it in cases we need to rotate/ test bad proxies
     def webscrape_url_scrape_proxies(self, target_url):
