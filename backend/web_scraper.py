@@ -9,6 +9,10 @@ import ssl
 import queue
 from proxy import Proxy
 import re
+from urllib.parse import urlparse
+from urllib.parse import urljoin
+from selenium import webdriver
+from selenium.webdriver.common.by import By
 
 # TODO: make thread safe in the future - should be easy since we always juggle only one instance - in the futre we may need many insance for many users
 # interacting with a share proxy list
@@ -62,7 +66,7 @@ class WebScraper:
                 proxy['id'], proxy['username'], proxy['password'], proxy['proxy_address'], proxy['port']))
 
     # scraping with premium proxies - one by one, TODO: for not its ok, but in the future we need to find a way to manage concurency
-    def websrcape_url_premium_proxies(self, target_url):
+    def webscrape_url_premium_proxies(self, target_url):
 
         # Iterate over all proxies - return on first working proxy result
         for _ in range(self._proxy_list.qsize()):
@@ -71,33 +75,12 @@ class WebScraper:
             print(f'using proxie: {proxy}')
 
             try:
-                result = requests.get(
-                    url=target_url, proxies=proxy.proxy_formatted(), headers=WebScraper._HEADERS)
-                doc = BeautifulSoup(result.text, "html.parser")
-
-                # pattern = re.compile(r'slideList')
-                # # For now we get just the main immage - TODO: figure out how to websrape the whole carousel
-                # # kijiji uses an IFrame, so may be more difficult as we need to simulate a click
-
-                # carousel = doc.find_all('ul', class_=pattern)
-                # print(carousel)
-                # listing_images = []
-                # if carousel:
-                #   list_items = carousel.find_all('li')
-                #   for item in list_items:
-                #     img = item.find("img", {"itemprop" : "image"}).get("src")
-                #     listing_images.append(img)
-
-                # Put back the proxy at the end of queue - rotating
-                self._proxy_list.put(proxy)
-
-                return {
-                    "url": target_url,
-                    "title": doc.find("h1", {"itemprop": "name"}).string,
-                    "price": doc.find("span", {"itemprop": "price"}).get("content"),
-                    "location": doc.find("span", {"itemprop": "address"}).get_text(),
-                    "images": doc.find("div", {"class": "mainImage"}).find("img", {"itemprop": "image"}).get("src"),
-                }
+                url_domain_name = urlparse(target_url).netloc.split('.')[-2]
+                if url_domain_name == 'kijiji':
+                    return self.webscrape_kijiji_page(target_url, proxy)
+                elif url_domain_name == 'kamernet':
+                    return self.webscrape_kamernet_page(target_url, proxy)
+                raise Exception('Website not supported')
 
             except Exception as e:
                 print(f'Error occurred while scraping url: {e}')
@@ -107,9 +90,72 @@ class WebScraper:
 
         raise Exception(
             "Ran out of proxies when parsing (time to ball out and buy our own proxies)")
+    
+    def webscrape_kamernet_page(self, target_url, proxy):
+        result = requests.get(
+                    url=target_url, proxies=proxy.proxy_formatted(), headers=WebScraper._HEADERS)
+        doc = BeautifulSoup(result.text, "html.parser")
+
+        # Put back the proxy at the end of queue - rotating
+        self._proxy_list.put(proxy)
+
+        # kamernet does something similar to marketplace to prevent webscraping so if this looks a little weird its because I couldnt directly find an element
+        return {
+            "url": target_url,
+            "title": doc.find('title').string.split('|')[0],
+            "price": doc.select('div[class*="PropertyDetails_price"]')[0].find("h6").string[2:].replace('.', ''),
+            "location": doc.select('div[class*="Header_details"]')[0].find("a").string,
+            "images": urljoin(target_url, doc.select('section[class*="Gallery_root"]')[0].find("img").get("src")) # TODO: replace what we have with the following: self.webscrape_kamernet_images(target_url, proxy)
+        }
+    
+    def webscrape_kamernet_images(self, target_url, proxy):
+        # TODO: integrate proxy rotation
+        driver = webdriver.Firefox()
+        driver.get(target_url)
+
+        driver.find_element(By.XPATH, '//button[contains(@class,"Gallery_button")]').click()
+        doc = BeautifulSoup(driver.page_source)
+
+        images = []
+        for img_container in doc.select('div[class*="Lightbox_imageWrapper"]'):
+            images.append(urljoin(target_url, img_container.find("img").get("src")))
+
+        driver.quit()
+        return images
+    
+    def webscrape_kijiji_page(self, target_url, proxy):
+        result = requests.get(
+                    url=target_url, proxies=proxy.proxy_formatted(), headers=WebScraper._HEADERS)
+        doc = BeautifulSoup(result.text, "html.parser")
+
+        self._proxy_list.put(proxy)
+
+        return {
+            "url": target_url,
+            "title": doc.find("h1", {"itemprop": "name"}).string,
+            "price": doc.find("span", {"itemprop": "price"}).get("content"),
+            "location": doc.find("span", {"itemprop": "address"}).get_text(),
+            "images": doc.find("div", {"class": "mainImage"}).find("img", {"itemprop": "image"}).get("src") # TODO: replace what we have with the following: self.webscrape_kijiji_images(target_url, proxy)
+        }
+    
+    def webscrape_kijiji_images(self, target_url, proxy):
+        # TODO: integrate proxy rotation
+        driver = webdriver.Firefox()
+        driver.get(target_url)
+
+        driver.find_element(By.XPATH, '//div[contains(@class,"generalOverlay")]').click()
+        doc = BeautifulSoup(driver.page_source)
+
+        images = []
+        images_container = doc.select('ul[class*="slideList"]')[0]
+        for img in images_container.find_all('img'):
+            images.append(img.get("src"))
+
+        driver.quit()
+        return images
 
     # bad proxies - keep it in cases we need to rotate/ test bad proxies
-    def websrcape_url_scrape_proxies(self, target_url):
+    def webscrape_url_scrape_proxies(self, target_url):
 
         proxies = self._proxy_scraper.proxy_scraping()
         try:
@@ -177,4 +223,6 @@ class WebScraper:
 
 # print(ws is w2)
 # test_url = "https://www.kijiji.ca/v-apartments-condos/winnipeg/2br-suite-in-character-building-in-the-heart-of-downtown/1700547336"
-# print(ws.websrcape_url_premium_proxies(test_url))
+# test_url_2 = "https://kamernet.nl/huren/kamer-amsterdam/pasubio/kamer-2285880"
+# print(ws.webscrape_url_premium_proxies(test_url))
+# print(ws.webscrape_url_premium_proxies(test_url_2))
