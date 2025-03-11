@@ -1,5 +1,6 @@
-import os
+import tempfile
 import zipfile
+import os
 
 class Proxy:
     # Defines the extension, permissions, and background script - the manifest tells chrome what permissions the extension we are injecting has.
@@ -34,7 +35,6 @@ class Proxy:
     def proxy_formatted(self):
         proxies = {
             'http': f'http://{self.usrname}:{self.password}@{self.ip}:{self.port}',
-            'https': f'https://{self.usrname}:{self.password}@{self.ip}:{self.port}',
         }
         return proxies
     
@@ -58,7 +58,7 @@ class Proxy:
                 singleProxy: {{
                     scheme: "http",
                     host: "{self.ip}",
-                    port: parseInt({self.por})
+                    port: parseInt({self.port})
                 }},
                 bypassList: ["localhost"]
                 }}
@@ -81,11 +81,14 @@ class Proxy:
             ["blocking"]
         );"""
 
+        zip_path = ""
         # we need the extension to be passed to the chrome manager as a zip file with the manifest and js code
         # we write the zip to memory buffer and pass to chrome
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".zip") as temp_zip:
+            with zipfile.ZipFile(temp_zip, "w") as zip:
+                zip.writestr("manifest.json", Proxy._MANIFEST_JSON)
+                zip.writestr("background.js", background_js)
 
-        with zipfile.ZipFile("proxy_extension.zip", "w") as zip:
-            zip.write("manifest.json", Proxy._MANIFEST_JSON)
-            zip.write("background.js", background_js)
+            zip_path = temp_zip.name
         
-        return os.path.join(os.getcwd(), "proxy_extension.zip")
+        return zip_path

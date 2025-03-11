@@ -13,6 +13,10 @@ from urllib.parse import urlparse
 from urllib.parse import urljoin
 from selenium import webdriver
 from selenium.webdriver.common.by import By
+from selenium.webdriver.chrome.service import Service
+from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver.chrome.options import Options
+import os
 
 # TODO: make thread safe in the future - should be easy since we always juggle only one instance - in the futre we may need many insance for many users
 # interacting with a share proxy list
@@ -105,12 +109,18 @@ class WebScraper:
             "title": doc.find('title').string.split('|')[0],
             "price": doc.select('div[class*="PropertyDetails_price"]')[0].find("h6").string[2:].replace('.', ''),
             "location": doc.select('div[class*="Header_details"]')[0].find("a").string,
-            "images": urljoin(target_url, doc.select('section[class*="Gallery_root"]')[0].find("img").get("src")) # TODO: replace what we have with the following: self.webscrape_kamernet_images(target_url, proxy)
+            "images": self.webscrape_kamernet_images(target_url, proxy)
         }
     
-    def webscrape_kamernet_images(self, target_url, proxy):
-        # TODO: integrate proxy rotation
-        driver = webdriver.Firefox()
+    def webscrape_kamernet_images(self, target_url, proxy: Proxy):
+
+        proxie_extension_path = proxy.seleinium_proxy()
+        options = Options()
+        options.add_extension(proxie_extension_path) 
+
+        # neede for headless mode (no GUI)
+        options.add_argument("--headless")
+        driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
         driver.get(target_url)
 
         driver.find_element(By.XPATH, '//button[contains(@class,"Gallery_button")]').click()
@@ -121,6 +131,7 @@ class WebScraper:
             images.append(urljoin(target_url, img_container.find("img").get("src")))
 
         driver.quit()
+        os.remove(proxie_extension_path)
         return images
     
     def webscrape_kijiji_page(self, target_url, proxy):
@@ -218,11 +229,11 @@ class WebScraper:
 
 
 # Testing - singleton works
-# ws = WebScraper()
+ws = WebScraper()
 # w2 = WebScraper()
 
 # print(ws is w2)
 # test_url = "https://www.kijiji.ca/v-apartments-condos/winnipeg/2br-suite-in-character-building-in-the-heart-of-downtown/1700547336"
-# test_url_2 = "https://kamernet.nl/huren/kamer-amsterdam/pasubio/kamer-2285880"
+test_url_2 = "https://kamernet.nl/huren/kamer-amsterdam/pasubio/kamer-2285880"
 # print(ws.webscrape_url_premium_proxies(test_url))
-# print(ws.webscrape_url_premium_proxies(test_url_2))
+print(ws.webscrape_url_premium_proxies(test_url_2))
