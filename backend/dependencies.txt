@@ -7,3 +7,4 @@ aiohttp
 asyncio
 apscheduler
 selenium
+selenium-wire
