@@ -41,7 +41,7 @@ class Server():
 
     @scheduler.scheduled_job(IntervalTrigger(minutes=1))
     def scheduled_scraping():
-        print("Beginning scheduled job")
+        # print("Beginning scheduled job")
         with Server.app.app_context():
 
 
@@ -70,7 +70,7 @@ class Server():
                                 price_curr = float(listing_data.get("price"))
                                 if price_curr != float(apartment_snap.get("price")):
 
-                                    print(f"User {email} has apartment needing of update: {apartment_snap}")
+                                    # print(f"User {email} has apartment needing of update: {apartment_snap}")
 
                                     with Server.app.test_client() as client:
                                         response = client.get(f"/db_api/update_listing?listing_id={apartment_id}&price={price_curr}&email={email}")
