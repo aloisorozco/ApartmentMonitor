@@ -11,8 +11,6 @@ from proxy import Proxy
 import re
 from urllib.parse import urlparse
 from urllib.parse import urljoin
-from selenium import webdriver
-from selenium.webdriver.common.by import By
 
 # TODO: make thread safe in the future - should be easy since we always juggle only one instance - in the futre we may need many insance for many users
 # interacting with a share proxy list
@@ -105,23 +103,8 @@ class WebScraper:
             "title": doc.find('title').string.split('|')[0],
             "price": doc.select('div[class*="PropertyDetails_price"]')[0].find("h6").string[2:].replace('.', ''),
             "location": doc.select('div[class*="Header_details"]')[0].find("a").string,
-            "images": urljoin(target_url, doc.select('section[class*="Gallery_root"]')[0].find("img").get("src")) # TODO: replace what we have with the following: self.webscrape_kamernet_images(target_url, proxy)
+            "images": urljoin(target_url, doc.select('section[class*="Gallery_root"]')[0].find("img").get("src"))
         }
-    
-    def webscrape_kamernet_images(self, target_url, proxy):
-        # TODO: integrate proxy rotation
-        driver = webdriver.Firefox()
-        driver.get(target_url)
-
-        driver.find_element(By.XPATH, '//button[contains(@class,"Gallery_button")]').click()
-        doc = BeautifulSoup(driver.page_source)
-
-        images = []
-        for img_container in doc.select('div[class*="Lightbox_imageWrapper"]'):
-            images.append(urljoin(target_url, img_container.find("img").get("src")))
-
-        driver.quit()
-        return images
     
     def webscrape_kijiji_page(self, target_url, proxy):
         result = requests.get(
@@ -135,24 +118,9 @@ class WebScraper:
             "title": doc.find("h1", {"itemprop": "name"}).string,
             "price": doc.find("span", {"itemprop": "price"}).get("content"),
             "location": doc.find("span", {"itemprop": "address"}).get_text(),
-            "images": doc.find("div", {"class": "mainImage"}).find("img", {"itemprop": "image"}).get("src") # TODO: replace what we have with the following: self.webscrape_kijiji_images(target_url, proxy)
+            "images": doc.find("div", {"class": "mainImage"}).find("img", {"itemprop": "image"}).get("src")
         }
-    
-    def webscrape_kijiji_images(self, target_url, proxy):
-        # TODO: integrate proxy rotation
-        driver = webdriver.Firefox()
-        driver.get(target_url)
 
-        driver.find_element(By.XPATH, '//div[contains(@class,"generalOverlay")]').click()
-        doc = BeautifulSoup(driver.page_source)
-
-        images = []
-        images_container = doc.select('ul[class*="slideList"]')[0]
-        for img in images_container.find_all('img'):
-            images.append(img.get("src"))
-
-        driver.quit()
-        return images
 
     # bad proxies - keep it in cases we need to rotate/ test bad proxies
     def webscrape_url_scrape_proxies(self, target_url):
