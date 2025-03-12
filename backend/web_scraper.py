@@ -10,11 +10,6 @@ import ssl
 import queue
 from proxy import Proxy
 import threading
-
-# TODO: make thread safe in the future - should be easy since we always juggle only one instance - in the futre we may need many insance for many users
-# interacting with a share proxy list
-
-
 class WebScraper:
 
     _HEADERS = {
