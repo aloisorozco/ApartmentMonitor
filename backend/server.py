@@ -64,7 +64,7 @@ class Server():
                             #         + apartment_snap.get("description") + " in their watchlist")
                             url = apartment_snap.get("url")
                             if url:
-                                listing_data = Server.ws.websrcape_url_premium_proxies(url)
+                                listing_data = Server.ws.webscrape_url_premium_proxies(url)
                                 price_curr = float(listing_data.get('price'))
                                 if price_curr != float(apartment_snap.get("price")):
                                     Server.update_listing(apartment_id, price_curr)
@@ -193,7 +193,7 @@ class Server():
 
         try:
             # Web scrape
-            listing_data = Server.ws.websrcape_url_premium_proxies(url)
+            listing_data = Server.ws.webscrape_url_premium_proxies(url)
             price_curr = float(listing_data.get('price'))
             desc = listing_data.get('title')
             location = listing_data.get('location')
