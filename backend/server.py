@@ -17,9 +17,6 @@ from apscheduler.triggers.interval import IntervalTrigger
 # document = "end point" that contains properties and other documents/collections
 class Server():
 
-    # letting flask know that all stuff it needs is in this dir
-    app = Flask(__name__)
-    CORS(app)
     cred: credentials.Certificate = credentials.Certificate("cred.json")
     firebase_admin.initialize_app(cred)
     db = firestore.client()
@@ -32,12 +29,24 @@ class Server():
         email_password = data['email_password']
 
     ws = None
-
-    def __init__(self) -> None:
-        Server.ws = WebScraper()
-
     scheduler = BackgroundScheduler()
     scheduler.start()
+
+    def __init__(self, app) -> None:
+        self.app = app
+        CORS(app)
+        Server.ws = WebScraper()
+        self.register_routes()
+
+    # registering all the API routes here
+    def register_routes(self):
+        self.app.add_url_rule("/db_api/send_email", view_func=self.send_email, methods=['GET']) # TODO: test send email with arguments
+        self.app.add_url_rule("/db_api/update_listing", view_func=self.update_listing, methods=['GET'])
+        self.app.add_url_rule("/db_api/fetch_watchlist", view_func=self.fetch_watchlist, methods=['GET'])
+        self.app.add_url_rule("/db_api/save_listing", view_func=self.save_listing, methods=['POST'])
+        self.app.add_url_rule("/db_api/remove_listing", view_func=self.remove_listing, methods=['DELETE'])
+        self.app.add_url_rule("/db_api/register_user", view_func=self.register_user, methods=['POST'])
+        self.app.add_url_rule("/db_api/auth_user", view_func=self.auth_user, methods=['POST'])
 
     @scheduler.scheduled_job(IntervalTrigger(minutes=1000000))
     def scheduled_scraping():
@@ -76,8 +85,7 @@ class Server():
     def hash_data(data):
         return hashlib.sha256(data.encode()).hexdigest()
 
-    @app.route('/db_api/send_email', methods=['GET'])
-    def send_email(receiver_email, subject, body):
+    def send_email(self, receiver_email, subject, body):
         smtp_server = "smtp.gmail.com"
         smtp_port = 587
 
@@ -99,8 +107,7 @@ class Server():
         return response
     # TODO: TO TEST
 
-    @app.route('/db_api/update_listing', methods=['GET'])
-    def update_listing():
+    def update_listing(self):
 
         listing_id = ""
         price = 0.0
@@ -156,8 +163,7 @@ class Server():
             response.status_code = 200
             return response
         
-    @app.route('/db_api/fetch_watchlist', methods=['GET'])
-    def fetch_watchlist():
+    def fetch_watchlist(self):
         email =  request.args.get('email')
         email_hash = Server.hash_data(email)
         watchlist = Server.db.collection('users').document(email_hash).collection('watchlist').get()
@@ -182,8 +188,7 @@ class Server():
         return response
 
 
-    @app.route('/db_api/save_listing', methods=['POST'])
-    def save_listing():
+    def save_listing(self):
         data = request.get_json()
         email = data.get('email')
         email_hash = Server.hash_data(email)
@@ -232,8 +237,8 @@ class Server():
         response.status_code = 200
         return response
 
-    @app.route('/db_api/remove_listing', methods=['DELETE'])
-    def remove_listing():
+    
+    def remove_listing(self):
         email = request.args.get('email')
         listing_id = request.args.get('listing_id')
         email_hash = Server.hash_data(email)
@@ -248,8 +253,7 @@ class Server():
         response.status_code = 200
         return response
 
-    @app.route('/db_api/register_user', methods=['POST'])
-    def register_user():
+    def register_user(self):
         data = request.get_json()
         fname = data.get('fname')
         lname = data.get('lname')
@@ -284,8 +288,7 @@ class Server():
         response.status_code = 200
         return response
 
-    @app.route('/db_api/auth_user', methods=['POST'])
-    def auth_user():
+    def auth_user(self):
         password = request.json.get('password')
         email = request.json.get('email')
 
@@ -309,3 +312,8 @@ class Server():
         response = jsonify({"ok": "user authed"})
         response.status_code = 200
         return response
+
+
+# letting flask know that all stuff it needs is in this dir
+app = Flask(__name__)
+server = Server(app)
