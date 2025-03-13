@@ -120,7 +120,7 @@ class WebScraper:
 
     def webscrape_url_premium_proxies(self, target_url):
 
-        print(f"[LOG] Thread {threading.current_thread().__getattribute__("name")} webscraping")
+        print(f"[LOG] Thread {threading.current_thread().__getattribute__('name')} webscraping")
 
         # Iterate over all proxies - return on first working proxy result
         for _ in range(self._proxy_list.qsize()):
@@ -142,11 +142,11 @@ class WebScraper:
 
             except queue.Empty:
                 raise Exception(
-                    f"[ERROR] Could not get any free proxies for {threading.current_thread().__getattribute__("name")}"
+                    f"[ERROR] Could not get any free proxies for {threading.current_thread().__getattribute__('name')}"
                 )
             except Exception as e:
                 raise Exception(
-                    f"[ERROR] Thread {threading.current_thread().__getattribute__("name")} caused an issue: {e}"
+                    f"[ERROR] Thread {threading.current_thread().__getattribute__('name')} caused an issue: {e}"
                 )
 
             try:
