@@ -6,4 +6,3 @@ beautifulsoup4
 aiohttp
 asyncio
 apscheduler
-selenium
