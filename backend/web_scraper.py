@@ -49,7 +49,7 @@ class WebScraper:
         self._ssl_ctx.verify_mode = ssl.CERT_NONE
         self._proxies_refresh_counter = 0
 
-        with open("proxy_cred.json") as f:
+        with open("/home/appartmonitor/ApartmentMonitor/backend/proxy_cred.json") as f:
             data = json.load(f)
             self._token = data["token"]
 

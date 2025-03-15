@@ -10,37 +10,34 @@ import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 import json
-from apscheduler.schedulers.background import BackgroundScheduler
-from apscheduler.triggers.interval import IntervalTrigger
 
 # collection = db entry that contains nothing more than documents
 # document = "end point" that contains properties and other documents/collections
 class Server():
 
-    cred: credentials.Certificate = credentials.Certificate("cred.json")
+    cred: credentials.Certificate = credentials.Certificate("/home/appartmonitor/ApartmentMonitor/backend/cred.json")
     firebase_admin.initialize_app(cred)
     db = firestore.client()
     email_address = ""
     email_password = ""
 
-    with open("email_cred.json") as f:
+    with open("/home/appartmonitor/ApartmentMonitor/backend/email_cred.json") as f:
         data = json.load(f)
         email_address = data['email_address']
         email_password = data['email_password']
 
     ws = None
-    scheduler = BackgroundScheduler()
-    scheduler.start()
 
-    def __init__(self, app) -> None:
-        self.app = app
-        CORS(app)
+    def __init__(self, app, scheduled = False) -> None:
+        # if Server was created as a persisatn instance, and not to perform a scheduled task, then don't expect an app object
+        if not scheduled:
+            self.app = app
+            CORS(app)
         Server.ws = WebScraper()
         self.register_routes()
 
     # registering all the API routes here
     def register_routes(self):
-        self.app.add_url_rule("/db_api/send_email", view_func=self.send_email, methods=['GET']) # TODO: test send email with arguments
         self.app.add_url_rule("/db_api/update_listing", view_func=self.update_listing, methods=['GET'])
         self.app.add_url_rule("/db_api/fetch_watchlist", view_func=self.fetch_watchlist, methods=['GET'])
         self.app.add_url_rule("/db_api/save_listing", view_func=self.save_listing, methods=['POST'])
@@ -48,10 +45,8 @@ class Server():
         self.app.add_url_rule("/db_api/register_user", view_func=self.register_user, methods=['POST'])
         self.app.add_url_rule("/db_api/auth_user", view_func=self.auth_user, methods=['POST'])
 
-    @scheduler.scheduled_job(IntervalTrigger(minutes=1000000))
     def scheduled_scraping():
         with Server.app.app_context():
-
 
             users_ref = Server.db.collection('users')
             users_snap = users_ref.stream()
