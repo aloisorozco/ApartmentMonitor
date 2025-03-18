@@ -1,5 +1,6 @@
 package com.big_hackathon.backend_v2.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -7,28 +8,24 @@ import java.util.List;
 
 @Getter
 @Setter
-@ToString(exclude = "password")
 @RequiredArgsConstructor
 @Builder
 @Entity
-public class User {
+public class Account {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private Long id;
-
-    private String firstName;
-
-    private String lastName;
-
+    @JsonProperty("email")
     private String email;
 
+    @JsonProperty("password")
     private String password;
 
-    private String createdAt;
-
-
-    @OneToMany(fetch = FetchType.LAZY)
+    @OneToMany
     private List<Apartment> apartments;
+
+    @Override
+    public String toString() {
+        return "email: " + email + " password: " + password;
+    }
 
 }

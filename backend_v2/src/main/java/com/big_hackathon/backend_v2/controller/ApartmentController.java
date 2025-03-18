@@ -14,13 +14,9 @@ import java.util.List;
 public class ApartmentController {
 
     @Autowired
-    private final ApartmentService apartmentService;
+    private ApartmentService apartmentService;
 
     Logger logger = LoggerFactory.getLogger(ApartmentController.class);
-
-    public ApartmentController(ApartmentService apartmentService) {
-        this.apartmentService = apartmentService;
-    }
 
     @GetMapping("/")
     public List<Apartment> listApartments() {
@@ -29,7 +25,7 @@ public class ApartmentController {
     }
 
     @GetMapping("/{id}")
-    public Apartment getApartment(@PathVariable Long id) {
+    public Apartment getApartment(@PathVariable String id) {
         logger.info("getApartment endpoint called");
         return apartmentService.getApartment(id);
     }
@@ -47,7 +43,7 @@ public class ApartmentController {
     }
 
     @DeleteMapping("/{id}")
-    public String deleteApartment(@PathVariable Long id) {
+    public String deleteApartment(@PathVariable String id) {
         logger.info("deleteApartment endpoint called");
         apartmentService.deleteApartment(id);
         return "OK";

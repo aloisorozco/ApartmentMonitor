@@ -2,6 +2,7 @@ package com.big_hackathon.backend_v2.service;
 
 import com.big_hackathon.backend_v2.model.Apartment;
 import com.big_hackathon.backend_v2.repository.ApartmentRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -17,7 +18,7 @@ public class ApartmentService {
         return apartmentRepo.findAll();
     }
 
-    public Apartment getApartment(Long id) {
+    public Apartment getApartment(String id) {
         return apartmentRepo.getById(id);
     }
 
@@ -29,7 +30,7 @@ public class ApartmentService {
         return apartmentRepo.save(apartment);
     }
 
-    public void deleteApartment(Long id) {
+    public void deleteApartment(String id) {
         apartmentRepo.deleteById(id);
     }
 }
