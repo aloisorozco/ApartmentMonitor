@@ -1,28 +1,33 @@
 package com.big_hackathon.backend_v2.service;
 
 import com.big_hackathon.backend_v2.model.Apartment;
+import com.big_hackathon.backend_v2.repository.ApartmentRepository;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 public class ApartmentService {
 
-    public String listApartments() {
-        return "TODO";
+    private ApartmentRepository apartmentRepo;
+
+    public List<Apartment> listApartments() {
+        return apartmentRepo.findAll();
     }
 
-    public String getApartment(Long id) {
-        return "TODO";
+    public Apartment getApartment(Long id) {
+        return apartmentRepo.getById(id);
     }
 
-    public String insertApartment(Apartment apartment) {
-        return "TODO";
+    public Apartment insertApartment(Apartment apartment) {
+        return apartmentRepo.save(apartment);
     }
 
-    public String updateApartment(Apartment apartment, Long id) {
-        return "TODO";
+    public Apartment updateApartment(Apartment apartment) {
+        return apartmentRepo.save(apartment);
     }
 
-    public String deleteApartment(Long id) {
-        return "TODO";
+    public void deleteApartment(Long id) {
+        apartmentRepo.deleteById(id);
     }
 }
