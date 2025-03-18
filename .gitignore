@@ -10,3 +10,4 @@ backend/__pycache__/server.cpython-313.pyc
 backend/email_cred.json
 backend/proxy_cred.json
 .idea
+application.properties
