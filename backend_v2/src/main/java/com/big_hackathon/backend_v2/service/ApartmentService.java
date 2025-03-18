@@ -2,6 +2,7 @@ package com.big_hackathon.backend_v2.service;
 
 import com.big_hackathon.backend_v2.model.Apartment;
 import com.big_hackathon.backend_v2.repository.ApartmentRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -9,6 +10,7 @@ import java.util.List;
 @Service
 public class ApartmentService {
 
+    @Autowired
     private ApartmentRepository apartmentRepo;
 
     public List<Apartment> listApartments() {

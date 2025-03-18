@@ -4,6 +4,7 @@ import com.big_hackathon.backend_v2.model.Apartment;
 import com.big_hackathon.backend_v2.service.ApartmentService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -12,6 +13,7 @@ import java.util.List;
 @RequestMapping("/api/apartments")
 public class ApartmentController {
 
+    @Autowired
     private final ApartmentService apartmentService;
 
     Logger logger = LoggerFactory.getLogger(ApartmentController.class);
