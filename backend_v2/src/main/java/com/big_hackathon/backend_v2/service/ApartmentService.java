@@ -7,22 +7,22 @@ import org.springframework.stereotype.Service;
 public class ApartmentService {
 
     public String listApartments() {
-        return "TODO";
+        return "TODO - Set up DB Access first";
     }
 
     public String getApartment(Long id) {
-        return "TODO";
+        return "TODO - Set up DB Access first";
     }
 
     public String insertApartment(Apartment apartment) {
-        return "TODO";
+        return "TODO - Set up DB Access first";
     }
 
     public String updateApartment(Apartment apartment, Long id) {
-        return "TODO";
+        return "TODO - Set up DB Access first";
     }
 
     public String deleteApartment(Long id) {
-        return "TODO";
+        return "TODO - Set up DB Access first";
     }
 }

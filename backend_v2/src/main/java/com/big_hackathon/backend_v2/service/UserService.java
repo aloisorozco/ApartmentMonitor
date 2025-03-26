@@ -7,22 +7,22 @@ import org.springframework.stereotype.Service;
 public class UserService {
 
     public String listUsers() {
-        return "TODO";
+        return "TODO - Set up DB Access first";
     }
 
     public String getUser(Long id) {
-        return "TODO";
+        return "TODO - Set up DB Access first";
     }
 
     public String insertUser(User user) {
-        return "TODO";
+        return "TODO - Set up DB Access first";
     }
 
     public String updateUser(User user, Long id) {
-        return "TODO";
+        return "TODO - Set up DB Access first";
     }
 
     public String deleteUser(Long id) {
-        return "TODO";
+        return "TODO - Set up DB Access first";
     }
 }
