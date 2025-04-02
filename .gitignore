@@ -21,3 +21,5 @@ backend_v2/target/surefire-reports/com.big_hackathon.backend_v2.BackendV2Applica
 backend_v2/target/surefire-reports/TEST-com.big_hackathon.backend_v2.BackendV2ApplicationTests.xml
 /backend_v2/target/classes/com/big_hackathon/backend_v2/keys
 /backend_v2/src/main/java/com/big_hackathon/backend_v2/keys
+/backend_v2/src/main/resources
+backend_v2/target/classes/cred.json
