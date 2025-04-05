@@ -1,28 +1,28 @@
 package com.big_hackathon.backend_v2.service;
 
-import com.big_hackathon.backend_v2.model.Apartment;
+import com.big_hackathon.backend_v2.model.User;
 import org.springframework.stereotype.Service;
 
 @Service
-public class ApartmentService {
+public class UserService {
 
-    public String listApartments() {
+    public String listUsers() {
         return "TODO - Set up DB Access first";
     }
 
-    public String getApartment(Long id) {
+    public String getUser(Long id) {
         return "TODO - Set up DB Access first";
     }
 
-    public String insertApartment(Apartment apartment) {
+    public String insertUser(User user) {
         return "TODO - Set up DB Access first";
     }
 
-    public String updateApartment(Apartment apartment, Long id) {
+    public String updateUser(User user, Long id) {
         return "TODO - Set up DB Access first";
     }
 
-    public String deleteApartment(Long id) {
+    public String deleteUser(Long id) {
         return "TODO - Set up DB Access first";
     }
 }
