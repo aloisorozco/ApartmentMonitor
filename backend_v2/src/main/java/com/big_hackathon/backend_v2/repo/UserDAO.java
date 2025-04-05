@@ -18,29 +18,33 @@ public class UserDAO {
     private final Firestore db;
 
     // No need to use Autowired - Spring injects automatically for constructors.
-    public UserDAO(Firestore db){
+    public UserDAO(Firestore db) {
         this.db = db;
     }
 
-    public void saveUser(){
+    public void saveUser() {
         // TODO
     }
-    public void delUser(){
+
+    public void delUser() {
         // TODO
     }
-    public void authUser(){
+
+    public void authUser() {
         // TODO
     }
-    public void updateUser(){
+
+    public void updateUser() {
         // TODO
     }
-    public void fetchWatchlist(){
+
+    public void fetchWatchlist() {
         // TODO
     }
 
     // TODO: Research and figure out how Sneaky Throws works
     @SneakyThrows
-    public void getUser(){
+    public void getUser() {
 
         // TODO: Research firestore syntax + Caveats
         ApiFuture<QuerySnapshot> query = db.collection("users").get();
