@@ -1,17 +1,23 @@
 package com.big_hackathon.backend_v2.repo;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
 
+import com.big_hackathon.backend_v2.model.Apartment;
 import com.google.api.core.ApiFuture;
+import com.google.cloud.firestore.DocumentSnapshot;
 import com.google.cloud.firestore.Firestore;
 import com.google.cloud.firestore.QueryDocumentSnapshot;
 import com.google.cloud.firestore.QuerySnapshot;
 import com.google.cloud.firestore.WriteResult;
 
+import ch.qos.logback.core.joran.action.AppenderAction;
 import lombok.SneakyThrows;
 
 // collection = db entry that contains nothing more than documents
@@ -48,11 +54,6 @@ public class UserDAO {
     }
 
     @SneakyThrows
-    public void fetchWatchlist(String userID, String email){
-        // ApiFuture<QuerySnapshot> query = db.collection("users").get()
-    }
-
-    @SneakyThrows
     public void getUser(){
 
         // .get() initiates an async read request to the db 
@@ -67,8 +68,25 @@ public class UserDAO {
         }
     }
 
-    private String hashData(){
-        // TODO: implement hashing function - we could use guava from google as a dependency
-        return null;
+    @SneakyThrows
+    public static String hashData(String data){
+        MessageDigest digest = MessageDigest.getInstance("SHA-256");
+        String hexString = hashByte2Hex(digest.digest(data.getBytes(StandardCharsets.UTF_8)));
+        return hexString;
+    }
+
+    // translating byte hash to hex 
+    private static String hashByte2Hex(byte[] hash){
+        
+        // size of 2 * len of hash since every byte becomes a two char hex value
+        StringBuilder hexString = new StringBuilder(2 * hash.length);
+        for (int i = 0; i < hash.length; i++) {
+            String hex = Integer.toHexString(0xff & hash[i]);
+            if(hex.length() == 1) {
+                hexString.append('0'); // ex: hex = a, we add 0 in front to keep the hex num two char long
+            }
+            hexString.append(hex);
+        }
+        return hexString.toString();
     }
 }
