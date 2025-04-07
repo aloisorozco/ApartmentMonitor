@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import com.big_hackathon.backend_v2.model.Apartment;
+import com.big_hackathon.backend_v2.model.Hasher;
 import com.big_hackathon.backend_v2.model.User;
 import com.google.api.core.ApiFuture;
 import com.google.cloud.firestore.DocumentSnapshot;
@@ -39,8 +40,8 @@ public class UserDAO {
 
     @SneakyThrows
     public User saveUser(String email, String password, String fname, String lname){
-        String emailHash = hashData(email);
-        String passwordHash = hashData(password);
+        String emailHash = Hasher.hashData(email);
+        String passwordHash = Hasher.hashData(password);
         
         DocumentSnapshot user = db.collection("users").document(emailHash).get().get();
         if(user.exists()){
@@ -67,7 +68,7 @@ public class UserDAO {
 
     @SneakyThrows
     public boolean delUser(String email){
-        String emailHash = hashData(email);
+        String emailHash = Hasher.hashData(email);
         ApiFuture<WriteResult> res = db.collection("users").document(emailHash).delete();
 
         // TODO: this will throw an error in the event the .get() fails - we should handle this in error middleware
@@ -78,8 +79,8 @@ public class UserDAO {
 
     @SneakyThrows
     public boolean authUser(String password, String email){
-        String userHash = hashData(email);
-        String passwordHash = hashData(password);
+        String userHash = Hasher.hashData(email);
+        String passwordHash = Hasher.hashData(password);
         ApiFuture<DocumentSnapshot> userQuerry = db.collection("users").document(userHash).get();
         DocumentSnapshot userdoc = userQuerry.get();
 
@@ -103,7 +104,7 @@ public class UserDAO {
     @SneakyThrows
     public User getUser(String email){
 
-        String hashedEamil = hashData(email);
+        String hashedEamil = Hasher.hashData(email);
         DocumentSnapshot userDoc = db.collection("users").document(hashedEamil).get().get();
         if(!userDoc.exists()){
             logger.info("User " + email + " does not exist");
@@ -131,27 +132,5 @@ public class UserDAO {
         for (QueryDocumentSnapshot document : documents) {
             System.out.println("User: " + document.getId());
         }
-    }
-
-    @SneakyThrows
-    public static String hashData(String data){
-        MessageDigest digest = MessageDigest.getInstance("SHA-256");
-        String hexString = hashByte2Hex(digest.digest(data.getBytes(StandardCharsets.UTF_8)));
-        return hexString;
-    }
-
-    // translating byte hash to hex 
-    private static String hashByte2Hex(byte[] hash){
-        
-        // size of 2 * len of hash since every byte becomes a two char hex value
-        StringBuilder hexString = new StringBuilder(2 * hash.length);
-        for (int i = 0; i < hash.length; i++) {
-            String hex = Integer.toHexString(0xff & hash[i]);
-            if(hex.length() == 1) {
-                hexString.append('0'); // ex: hex = a, we add 0 in front to keep the hex num two char long
-            }
-            hexString.append(hex);
-        }
-        return hexString.toString();
     }
 }
