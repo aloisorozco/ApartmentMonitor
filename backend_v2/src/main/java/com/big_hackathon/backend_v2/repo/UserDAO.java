@@ -38,10 +38,6 @@ public class UserDAO {
         // TODO
     }
 
-    public void fetchWatchlist() {
-        // TODO
-    }
-
     // TODO: Research and figure out how Sneaky Throws works
     @SneakyThrows
     public void getUser() {
