@@ -8,6 +8,8 @@ import MonitorPage from "./MonitorPage/MonitorPage";
 import Register from "./Login/Register";
 import PrivateRoute from "./PrivateRoute";
 
+import ApartmentsList from './test/ApartmentList';  // Import the component
+
 function App() {
   const [noScroll, setNoScroll] = useState(false); //set scroll condition as state
   const location = useLocation(); //get path
@@ -28,6 +30,9 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
       </Routes>
+      
+      <ApartmentsList />
+
     </div>
   );
 }
