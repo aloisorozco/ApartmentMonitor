@@ -10,6 +10,8 @@ public class Apartment {
 
     private String location;
 
+    private String description;
+
     private String imageLink;
 
     private double price;
