@@ -6,7 +6,9 @@ import lombok.*;
 @Builder
 public class Apartment {
 
-    private String location;
+    private String listingID;
+
+    private String description;
 
     private String imageLink;
 
@@ -15,6 +17,4 @@ public class Apartment {
     private String url;
 
     private double priceTarget;
-
-    private String description;
 }

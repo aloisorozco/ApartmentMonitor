@@ -10,7 +10,6 @@ import com.big_hackathon.backend_v2.service.UserService;
 public class BackendV2Application {
 
 	public static void main(String[] args) {
-		
 		String testEmail = "spring@gmail.com";
 		String pass = "123";
 		// No need to create context since we have a spring application
