@@ -8,6 +8,8 @@ public class Apartment {
 
     private String listingID;
 
+    private String location;
+
     private String description;
 
     private String imageLink;
