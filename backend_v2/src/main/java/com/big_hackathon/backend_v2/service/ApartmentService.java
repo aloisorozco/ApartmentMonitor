@@ -1,13 +1,26 @@
 package com.big_hackathon.backend_v2.service;
 
 import com.big_hackathon.backend_v2.model.Apartment;
+import com.big_hackathon.backend_v2.repo.ApartmentDAO;
+import com.google.cloud.firestore.QueryDocumentSnapshot;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 public class ApartmentService {
 
-    public String listApartments() {
-        return "TODO - Set up DB Access first";
+    private final ApartmentDAO apartmentDAO;
+
+    @Autowired
+    public ApartmentService(ApartmentDAO apartmentDAO) {
+        this.apartmentDAO = apartmentDAO;
+    }
+
+    public List<Apartment> getWatchlist() {
+        //hardcoded test
+        return apartmentDAO.fetchWatchlist("grimut.daniel@gmail.com");
     }
 
     public String getApartment(Long id) {

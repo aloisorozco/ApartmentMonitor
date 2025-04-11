@@ -2,26 +2,30 @@ package com.big_hackathon.backend_v2.controller;
 
 import com.big_hackathon.backend_v2.model.Apartment;
 import com.big_hackathon.backend_v2.service.ApartmentService;
+import com.google.cloud.firestore.QueryDocumentSnapshot;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/apartments")
 public class ApartmentController {
 
     private final ApartmentService apartmentService;
-
     Logger logger = LoggerFactory.getLogger(ApartmentController.class);
 
+    @Autowired
     public ApartmentController(ApartmentService apartmentService) {
         this.apartmentService = apartmentService;
     }
 
     @GetMapping("/")
-    public String listApartments() {
+    public List<Apartment> getUserWatchlist() {
         logger.info("listApartments endpoint called");
-        return apartmentService.listApartments();
+        return apartmentService.getWatchlist();
     }
 
     @GetMapping("/{id}")
@@ -30,7 +34,7 @@ public class ApartmentController {
         return apartmentService.getApartment(id);
     }
 
-    @PostMapping("/")
+    @PostMapping("/insert")
     public String insertApartment(@RequestBody Apartment apartment) {
         logger.info("insertApartment endpoint called");
         return apartmentService.insertApartment(apartment);
