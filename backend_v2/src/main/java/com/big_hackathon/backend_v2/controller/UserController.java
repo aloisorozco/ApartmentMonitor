@@ -18,34 +18,34 @@ public class UserController {
         this.userService = userService;
     }
 
-    @GetMapping("/")
-    public String listUsers() {
-        logger.info("listUsers endpoint called");
-        return userService.listUsers();
-    }
-
     @GetMapping("/{id}")
-    public String getUser(@PathVariable Long id) {
+    public User getUser(@PathVariable String email) {
         logger.info("getUser endpoint called");
-        return userService.getUser(id);
+        return userService.getUser(email);
     }
 
     @PostMapping("/")
-    public String insertUser(@RequestBody User user) {
+    public String insertUser(@RequestBody String email, @RequestBody String password, @RequestBody String fname, @RequestBody String lname) {
         logger.info("insertUser endpoint called");
-        return userService.insertUser(user);
+        return userService.saveUser(email, password, fname, lname);
     }
 
-    @PutMapping("/{id}")
-    public String updateUser(@RequestBody User user, @PathVariable Long id) {
-        logger.info("updateUser endpoint called");
-        return userService.updateUser(user, id);
-    }
+    // @PutMapping("/{id}")
+    // public String updateUser(@PathVariable Long id) {
+    //     logger.info("updateUser endpoint called");
+    //     return userService.updateUser(id);
+    // }
 
     @DeleteMapping("/{id}")
-    public String deleteUser(@PathVariable Long id) {
+    public String deleteUser(@PathVariable String id) {
         logger.info("deleteUser endpoint called");
         return userService.deleteUser(id);
+    }
+
+    @DeleteMapping("/")
+    public String authUser(@RequestBody String email, @RequestBody String password) {
+        logger.info("deleteUser endpoint called");
+        return userService.authUser(email, password);
     }
 
 }
