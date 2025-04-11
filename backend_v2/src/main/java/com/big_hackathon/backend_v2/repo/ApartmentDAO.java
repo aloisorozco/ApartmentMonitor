@@ -1,11 +1,10 @@
 package com.big_hackathon.backend_v2.repo;
 
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.List;
 
 import com.big_hackathon.backend_v2.model.Apartment;
+import com.big_hackathon.backend_v2.model.Hasher;
 import com.google.cloud.firestore.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,7 +59,7 @@ public class ApartmentDAO {
 
     @SneakyThrows
     public List<Apartment> fetchWatchlist(String email) {
-        String userHash = hashData(email);
+        String userHash = Hasher.hashData(email);
         //FIXME talk to Daniel if futureapi is needed (this way done here will block the thread)? With futureapi we can set a async call
         QuerySnapshot snapshot = db.collection("users").document(userHash).collection("watchlist").get().get();;
 
@@ -91,28 +90,5 @@ public class ApartmentDAO {
 
         // Return the list of ApartmentDTOs
         return apartments;
-    }
-
-
-    //TODO should be removed when "hasher" bean is created
-    @SneakyThrows
-    public static String hashData(String data){
-        MessageDigest digest = MessageDigest.getInstance("SHA-256");
-        return hashByte2Hex(digest.digest(data.getBytes(StandardCharsets.UTF_8)));
-    }
-
-    //TODO should be removed when "hasher" bean is created
-    private static String hashByte2Hex(byte[] hash){
-
-        // size of 2 * len of hash since every byte becomes a two char hex value
-        StringBuilder hexString = new StringBuilder(2 * hash.length);
-        for (byte b : hash) {
-            String hex = Integer.toHexString(0xff & b);
-            if (hex.length() == 1) {
-                hexString.append('0'); // ex: hex = a, we add 0 in front to keep the hex num two char long
-            }
-            hexString.append(hex);
-        }
-        return hexString.toString();
     }
 }
