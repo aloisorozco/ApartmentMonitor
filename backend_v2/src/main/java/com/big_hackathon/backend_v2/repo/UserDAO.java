@@ -12,7 +12,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
-import com.big_hackathon.backend_v2.model.Apartment;
 import com.big_hackathon.backend_v2.model.Hasher;
 import com.big_hackathon.backend_v2.model.User;
 import com.google.api.core.ApiFuture;
@@ -39,31 +38,22 @@ public class UserDAO {
     }
 
     @SneakyThrows
-    public User saveUser(String email, String password, String fname, String lname){
-        String emailHash = Hasher.hashData(email);
-        String passwordHash = Hasher.hashData(password);
-
-        DocumentSnapshot user = db.collection("users").document(emailHash).get().get();
-        if(user.exists()){
+    public boolean saveUser(User user){
+        String emailHash = Hasher.hashData(user.getEmail());
+        
+        DocumentSnapshot userDoc = db.collection("users").document(emailHash).get().get();
+        if(userDoc.exists()){
 
             // TODO: throw custom error and handle it in error middelware
-            logger.info("User " + email + " already exists");
-            return null;
+            logger.info("User " + user.getEmail() + " already exists");
+            return false;
         }
 
-        long createAt = System.currentTimeMillis() / 1000L;
 
-        Map<String, Object> data = new HashMap<>();
-        data.put("fname", fname);
-        data.put("lname", lname);
-        data.put("createdAt", createAt);
-        data.put("email", email);
-        data.put("password_hashed", passwordHash);
+        WriteResult result = db.collection("users").document(emailHash).set(user).get();
+        logger.info("Created new user " +  user.getEmail() + " at time " + result.getUpdateTime());
 
-        WriteResult result = db.collection("users").document(emailHash).set(data).get();
-        logger.info("Created new user " +  email + " at time " + result.getUpdateTime());
-
-        return User.builder().email(email).passwordHashed(passwordHash).firstName(fname).lastName(lname).createdAt(createAt).build();
+        return true;
     }
 
     @SneakyThrows
@@ -97,12 +87,12 @@ public class UserDAO {
         return false;
     }
 
-    public void updateUser(){
-        // TODO
-    }
+    // public void updateUser(){
+    //     // TODO
+    // }
 
     @SneakyThrows
-    public User getUser(String email){
+    public DocumentSnapshot getUser(String email){
 
         String hashedEamil = Hasher.hashData(email);
         DocumentSnapshot userDoc = db.collection("users").document(hashedEamil).get().get();
@@ -111,18 +101,13 @@ public class UserDAO {
             return null;
         }
 
-        String fname = userDoc.getString("fname");
-        String lname = userDoc.getString("lname");
-        String password = userDoc.getString("password_hashed");
-        long createdAt = userDoc.getLong("createdAt");
-
-        return User.builder().firstName(fname).lastName(lname).email(email).passwordHashed(password).createdAt(createdAt).build();
+        return userDoc;
     }
 
     @SneakyThrows
     public void getUsers(){
 
-        // .get() initiates an async read request to the db
+        // .get() initiates an async read request to the db 
         ApiFuture<QuerySnapshot> query = db.collection("users").get();
 
         // we have another .get() here since we need to wait for the async API futuure read request
