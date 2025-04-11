@@ -15,7 +15,6 @@ import java.util.List;
 public class ApartmentController {
 
     private final ApartmentService apartmentService;
-
     Logger logger = LoggerFactory.getLogger(ApartmentController.class);
 
     @Autowired
@@ -23,10 +22,10 @@ public class ApartmentController {
         this.apartmentService = apartmentService;
     }
 
-    @GetMapping("/list")
-    public List<Apartment> listApartments() {
+    @GetMapping("/")
+    public List<Apartment> getUserWatchlist() {
         logger.info("listApartments endpoint called");
-        return apartmentService.listApartments();
+        return apartmentService.getWatchlist();
     }
 
     @GetMapping("/{id}")

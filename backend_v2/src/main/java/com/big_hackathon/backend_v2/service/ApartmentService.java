@@ -18,7 +18,8 @@ public class ApartmentService {
         this.apartmentDAO = apartmentDAO;
     }
 
-    public List<Apartment> listApartments() {
+    public List<Apartment> getWatchlist() {
+        //hardcoded test
         return apartmentDAO.fetchWatchlist("grimut.daniel@gmail.com");
     }
 
