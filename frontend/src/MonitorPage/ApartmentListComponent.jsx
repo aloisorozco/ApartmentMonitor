@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Card, CardContent, CardMedia, Typography, IconButton, Button, Grid, Grid2 } from '@mui/material';
+import { Box, Card, CardContent, CardMedia, Typography, IconButton, Button, Grid2 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { useAuth } from '../AuthContext';
 

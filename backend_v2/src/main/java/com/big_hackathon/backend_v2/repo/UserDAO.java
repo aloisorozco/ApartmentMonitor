@@ -81,6 +81,7 @@ public class UserDAO {
 
         String fetchedPasswordHashed = userdoc.getString("password_hashed");
 
+        //TODO equals can return NullPointerException, should assert the fetch
         if(fetchedPasswordHashed.equals(passwordHash)){
             return true;
         }
@@ -94,8 +95,8 @@ public class UserDAO {
     @SneakyThrows
     public DocumentSnapshot getUser(String email){
 
-        String hashedEamil = Hasher.hashData(email);
-        DocumentSnapshot userDoc = db.collection("users").document(hashedEamil).get().get();
+        String hashedEmail = Hasher.hashData(email);
+        DocumentSnapshot userDoc = db.collection("users").document(hashedEmail).get().get();
         if(!userDoc.exists()){
             logger.info("User " + email + " does not exist");
             return null;
@@ -110,7 +111,7 @@ public class UserDAO {
         // .get() initiates an async read request to the db
         ApiFuture<QuerySnapshot> query = db.collection("users").get();
 
-        // we have another .get() here since we need to wait for the async API futuure read request
+        // we have another .get() here since we need to wait for the async API future read request
         // this get() here is BLOCKING - we are waiting until db resolves
         QuerySnapshot querySnapshot = query.get(); // QuerySnapshot = snapshot of docs in the collection
         List<QueryDocumentSnapshot> documents = querySnapshot.getDocuments();

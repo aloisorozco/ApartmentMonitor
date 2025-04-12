@@ -26,7 +26,7 @@ const Login = () => {
 
     if (!validateFields()) return; //if invalid field, don't POST
 
-    fetch("http://localhost:5500/db_api/auth_user", {
+    fetch("http://localhost:8080/api/users/auth_user", {
       method: "POST",
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password })
