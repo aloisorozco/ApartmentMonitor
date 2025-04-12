@@ -53,6 +53,7 @@ public class UserController {
 
         String email = json.get("email");
         String password = json.get("password");
+        System.out.println(email + " and " + password);
         String result = userService.authUser(email, password);
 
         if(Objects.equals(result, "SUCCESS")){

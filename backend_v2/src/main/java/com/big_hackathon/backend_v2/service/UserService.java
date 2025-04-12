@@ -48,7 +48,7 @@ public class UserService {
         return (userDAO.delUser(id) ? "SUCCESS" : "FAIL");
     }
 
-    public String authUser(String id, String password) {
-        return (userDAO.authUser(id, password) ? "SUCCESS" : "FAIL");
+    public String authUser(String email, String password) {
+        return (userDAO.authUser(email, password) ? "SUCCESS" : "FAIL");
     }
 }

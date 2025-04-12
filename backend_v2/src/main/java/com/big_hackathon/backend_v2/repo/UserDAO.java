@@ -68,7 +68,7 @@ public class UserDAO {
     }
 
     @SneakyThrows
-    public boolean authUser(String password, String email){
+    public boolean authUser(String email, String password){
         String userHash = Hasher.hashData(email);
         String passwordHash = Hasher.hashData(password);
         ApiFuture<DocumentSnapshot> userQuerry = db.collection("users").document(userHash).get();
