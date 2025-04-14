@@ -9,15 +9,14 @@ export default function MonitorPage() {
   const { userEmail } = useAuth()
 
   useEffect(() => {
-    fetch(`http://localhost:5500/db_api/fetch_watchlist?email=${userEmail}`, {
+    fetch(`http://localhost:8080/api/apartments/fetch_watchlist?email=${userEmail}`, {
       method: "GET",
       headers : { 'Content-Type' : 'application/json'},
       data : {}
     })
     .then(res => res.json())
     .then(data => {
-      console.log(data)
-      let listings_fetched = data.listings.map((listing) => {
+      let listings_fetched = (data.listings ?? []).map((listing) => {
         return {
           id: listing.listing_id,
           title: listing.location,

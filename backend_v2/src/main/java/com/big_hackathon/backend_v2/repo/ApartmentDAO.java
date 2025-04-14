@@ -28,6 +28,7 @@ public class ApartmentDAO {
 
     @SneakyThrows
     public boolean saveApartment(Apartment apartment) {
+        //TODO fix the logic, should take into account the user email
         DocumentSnapshot lookupApartment = db.collection("apartments").document(apartment.getListingID()).get().get();
         if(lookupApartment.exists()){
             //TODO error middleware could throw an exception

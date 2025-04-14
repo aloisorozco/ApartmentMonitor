@@ -1,6 +1,7 @@
 package com.big_hackathon.backend_v2.controller;
 
 import com.big_hackathon.backend_v2.model.Apartment;
+import com.big_hackathon.backend_v2.model.InsertWatchlistTemplate;
 import com.big_hackathon.backend_v2.service.ApartmentService;
 import com.google.cloud.firestore.QueryDocumentSnapshot;
 import org.slf4j.Logger;
@@ -9,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/apartments")
@@ -22,10 +24,10 @@ public class ApartmentController {
         this.apartmentService = apartmentService;
     }
 
-    @GetMapping("/")
-    public List<Apartment> getUserWatchlist() {
-        logger.info("listApartments endpoint called");
-        return apartmentService.getWatchlist();
+    @GetMapping("/fetch_watchlist")
+    public List<Apartment> getUserWatchlist(@RequestParam  String email) {
+        logger.info("getUserWatchlist endpoint called");
+        return apartmentService.getWatchlist(email);
     }
 
     @GetMapping("/{id}")
@@ -35,7 +37,7 @@ public class ApartmentController {
     }
 
     @PostMapping("/insert")
-    public String insertApartment(@RequestBody Apartment apartment) {
+    public String insertApartment(@RequestBody InsertWatchlistTemplate apartment) {
         logger.info("insertApartment endpoint called");
         return apartmentService.insertApartment(apartment);
     }

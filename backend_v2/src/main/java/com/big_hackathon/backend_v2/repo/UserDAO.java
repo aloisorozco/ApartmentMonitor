@@ -43,7 +43,6 @@ public class UserDAO {
 
         DocumentSnapshot userDoc = db.collection("users").document(emailHash).get().get();
         if(userDoc.exists()){
-
             // TODO: throw custom error and handle it in error middelware
             logger.info("User " + user.getEmail() + " already exists");
             return false;
@@ -80,9 +79,6 @@ public class UserDAO {
         }
 
         String fetchedPasswordHashed = userdoc.getString("password_hashed");
-        logger.info("\n\n\n\n\n\n\n\n");
-        logger.info(userdoc.getString("email"));
-        logger.info("\n\n\n\n\n\n\n\n");
 
         //TODO equals can return NullPointerException, should assert the fetch
         if(fetchedPasswordHashed.equals(passwordHash)){

@@ -18,7 +18,7 @@ export default function ApartmentInputComponent(props) {
     let email = userEmail
     let targetPrice =  600
     
-    fetch("http://localhost:5500/db_api/save_listing", {
+    fetch("http://localhost:8080/api/apartments/insert", {
       method: "POST",
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email: email, target_price : targetPrice, url: url})
