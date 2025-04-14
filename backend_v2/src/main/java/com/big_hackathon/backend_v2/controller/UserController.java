@@ -4,7 +4,12 @@ import com.big_hackathon.backend_v2.model.User;
 import com.big_hackathon.backend_v2.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
+import java.util.Objects;
 
 @RestController
 @RequestMapping("/api/users")
@@ -18,13 +23,13 @@ public class UserController {
         this.userService = userService;
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/get/{id}")
     public User getUser(@PathVariable String email) {
         logger.info("getUser endpoint called");
         return userService.getUser(email);
     }
 
-    @PostMapping("/")
+    @PostMapping("/insert")
     public String insertUser(@RequestBody String email, @RequestBody String password, @RequestBody String fname, @RequestBody String lname) {
         logger.info("insertUser endpoint called");
         return userService.saveUser(email, password, fname, lname);
@@ -36,16 +41,28 @@ public class UserController {
     //     return userService.updateUser(id);
     // }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/delete/{id}")
     public String deleteUser(@PathVariable String id) {
         logger.info("deleteUser endpoint called");
         return userService.deleteUser(id);
     }
 
-    @DeleteMapping("/")
-    public String authUser(@RequestBody String email, @RequestBody String password) {
-        logger.info("deleteUser endpoint called");
-        return userService.authUser(email, password);
+    @PostMapping("/auth_user")
+    public ResponseEntity<String> authUser(@RequestBody Map<String, String> json) {
+        logger.info("Authenticate user endpoint called");
+
+        String email = json.get("email");
+        String password = json.get("password");
+        System.out.println(email + " and " + password);
+        String result = userService.authUser(email, password);
+
+        if(Objects.equals(result, "SUCCESS")){
+            System.out.println("SUCCESSFUL LOGIN");
+            return new ResponseEntity<>("Login successful", HttpStatus.OK);
+        } else {
+            System.out.println("FAILED LOGIN");
+            return new ResponseEntity<>("Login failed", HttpStatus.UNAUTHORIZED);
+        }
     }
 
 }

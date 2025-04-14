@@ -22,21 +22,22 @@ public class UserService {
 
         DocumentSnapshot userDoc = userDAO.getUser(email);
 
+        //TODO potential error, variables return null, we need to check for that
         String fname = userDoc.getString("fname");
         String lname = userDoc.getString("lname");
         String password = userDoc.getString("password_hashed");
         long createdAt = userDoc.getLong("createdAt");
 
-        return User.builder().firstName(fname).lastName(lname).email(email).passwordHashed(password).createdAt(createdAt).build();
+        return User.builder().firstName(fname).lastName(lname).email(email).password_hashed(password).createdAt(createdAt).build();
     }
 
     public String saveUser(String email, String password, String fname, String lname) {
 
         long createAt = System.currentTimeMillis() / 1000L;
         String passwordHash = Hasher.hashData(password);
-        User newUser = User.builder().email(email).passwordHashed(passwordHash).firstName(fname).lastName(lname).createdAt(createAt).build();
+        User newUser = User.builder().email(email).password_hashed(passwordHash).firstName(fname).lastName(lname).createdAt(createAt).build();
 
-        return (userDAO.saveUser(newUser) == true ? "SUCCESS" : "FAIL");
+        return (userDAO.saveUser(newUser) ? "SUCCESS" : "FAIL");
     }
 
     // public String updateUser(Long id) {
@@ -44,10 +45,10 @@ public class UserService {
     // }
 
     public String deleteUser(String id) {
-        return (userDAO.delUser(id) == true ? "SUCCESS" : "FAIL");
+        return (userDAO.delUser(id) ? "SUCCESS" : "FAIL");
     }
 
-    public String authUser(String id, String password) {
-        return (userDAO.authUser(id, password) == true ? "SUCCESS" : "FAIL");
+    public String authUser(String email, String password) {
+        return (userDAO.authUser(email, password) ? "SUCCESS" : "FAIL");
     }
 }
