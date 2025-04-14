@@ -11,6 +11,7 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState({});
 
+  //validates the fields
   const validateFields = () => {
     const newErrors = {};
     if (!email.trim()) newErrors.email = true;
@@ -21,22 +22,25 @@ const Login = () => {
   };
 
   const handleSubmit = (event) => {
-    event.preventDefault();
+    event.preventDefault(); //don't refresh the page
 
-    if (!validateFields()) return;
+    if (!validateFields()) return; //if invalid field, don't POST
 
-    fetch("http://localhost:5500/db_api/auth_user", {
+    fetch("http://localhost:8080/api/users/auth_user", {
       method: "POST",
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password })
     })
       .then(response => {
         if (response.ok) {
-          login();
-          navigate('/');
+          login(email); //pass in email into context
+          navigate('/'); //navigate to main page
         } else {
           console.log("Invalid Credentials");
         }
+      })
+      .then(data => {
+        console.log(data); //view response data
       })
       .catch(error => console.log(error));
   };

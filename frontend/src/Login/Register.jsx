@@ -28,7 +28,7 @@ const Register = () => {
 
     if (!validateFields()) return;
 
-    fetch("http://localhost:5500/db_api/register_user", {
+    fetch("http://localhost:8080/api/users/register_user", {
       method: "POST",
       headers: {
         'Content-Type': 'application/json',
