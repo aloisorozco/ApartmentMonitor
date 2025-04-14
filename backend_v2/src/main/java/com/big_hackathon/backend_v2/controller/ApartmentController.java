@@ -40,11 +40,12 @@ public class ApartmentController {
         return apartmentService.insertApartment(apartment);
     }
 
-    @PutMapping("/{id}")
-    public String updateApartment(@RequestBody Apartment apartment, @PathVariable Long id) {
-        logger.info("updateApartment endpoint called");
-        return apartmentService.updateApartment(apartment, id);
-    }
+    //FIXME figure out use
+//    @PutMapping("/{id}")
+//    public String updateApartment(@RequestBody Apartment apartment, @PathVariable Long id) {
+//        logger.info("updateApartment endpoint called");
+//        return apartmentService.updateApartment(apartment, id);
+//    }
 
     @DeleteMapping("/{id}")
     public String deleteApartment(@PathVariable Long id) {

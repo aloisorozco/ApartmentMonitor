@@ -40,7 +40,7 @@ public class UserDAO {
     @SneakyThrows
     public boolean saveUser(User user){
         String emailHash = Hasher.hashData(user.getEmail());
-        
+
         DocumentSnapshot userDoc = db.collection("users").document(emailHash).get().get();
         if(userDoc.exists()){
 
@@ -68,7 +68,7 @@ public class UserDAO {
     }
 
     @SneakyThrows
-    public boolean authUser(String password, String email){
+    public boolean authUser(String email, String password){
         String userHash = Hasher.hashData(email);
         String passwordHash = Hasher.hashData(password);
         ApiFuture<DocumentSnapshot> userQuerry = db.collection("users").document(userHash).get();
@@ -80,7 +80,11 @@ public class UserDAO {
         }
 
         String fetchedPasswordHashed = userdoc.getString("password_hashed");
+        logger.info("\n\n\n\n\n\n\n\n");
+        logger.info(userdoc.getString("email"));
+        logger.info("\n\n\n\n\n\n\n\n");
 
+        //TODO equals can return NullPointerException, should assert the fetch
         if(fetchedPasswordHashed.equals(passwordHash)){
             return true;
         }
@@ -94,8 +98,8 @@ public class UserDAO {
     @SneakyThrows
     public DocumentSnapshot getUser(String email){
 
-        String hashedEamil = Hasher.hashData(email);
-        DocumentSnapshot userDoc = db.collection("users").document(hashedEamil).get().get();
+        String hashedEmail = Hasher.hashData(email);
+        DocumentSnapshot userDoc = db.collection("users").document(hashedEmail).get().get();
         if(!userDoc.exists()){
             logger.info("User " + email + " does not exist");
             return null;
@@ -107,10 +111,10 @@ public class UserDAO {
     @SneakyThrows
     public void getUsers(){
 
-        // .get() initiates an async read request to the db 
+        // .get() initiates an async read request to the db
         ApiFuture<QuerySnapshot> query = db.collection("users").get();
 
-        // we have another .get() here since we need to wait for the async API futuure read request
+        // we have another .get() here since we need to wait for the async API future read request
         // this get() here is BLOCKING - we are waiting until db resolves
         QuerySnapshot querySnapshot = query.get(); // QuerySnapshot = snapshot of docs in the collection
         List<QueryDocumentSnapshot> documents = querySnapshot.getDocuments();
