@@ -31,6 +31,13 @@
 	</properties>
 	<dependencies>
 		<dependency>
+			<groupId>org.jsoup</groupId>
+			<artifactId>jsoup</artifactId>
+			<version>1.19.1</version>
+			<scope>system</scope>
+			<systemPath>${pom.basedir}/libs/jsoup-1.19.1.jar</systemPath>
+		</dependency>
+		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>
