@@ -25,17 +25,17 @@ public class UserService {
         //TODO potential error, variables return null, we need to check for that
         String fname = userDoc.getString("fname");
         String lname = userDoc.getString("lname");
-        String password = userDoc.getString("password_hashed");
+        String password = userDoc.getString("passwordHashed");
         long createdAt = userDoc.getLong("createdAt");
 
-        return User.builder().firstName(fname).lastName(lname).email(email).password_hashed(password).createdAt(createdAt).build();
+        return User.builder().firstName(fname).lastName(lname).email(email).passwordHashed(password).createdAt(createdAt).build();
     }
 
     public String saveUser(String email, String password, String fname, String lname) {
 
         long createAt = System.currentTimeMillis() / 1000L;
         String passwordHash = Hasher.hashData(password);
-        User newUser = User.builder().email(email).password_hashed(passwordHash).firstName(fname).lastName(lname).createdAt(createAt).build();
+        User newUser = User.builder().email(email).passwordHashed(passwordHash).firstName(fname).lastName(lname).createdAt(createAt).build();
 
         return (userDAO.saveUser(newUser) ? "SUCCESS" : "FAIL");
     }

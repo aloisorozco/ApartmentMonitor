@@ -15,7 +15,7 @@ public class CorsConfig {
                 registry.addMapping("/**") // Allow all endpoints
                         .allowedOrigins("http://localhost:3000") // React app origin
                         .allowedMethods("GET", "POST", "PUT", "DELETE")
-                        .allowCredentials(true);
+                        .allowCredentials(true); // TODO: test security risk - we are removing csrf with OAuth, so its risky.
             }
         };
     }

@@ -2,7 +2,6 @@ package com.big_hackathon.backend_v2.controller;
 
 import com.big_hackathon.backend_v2.model.Apartment;
 import com.big_hackathon.backend_v2.service.ApartmentService;
-import com.google.cloud.firestore.QueryDocumentSnapshot;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

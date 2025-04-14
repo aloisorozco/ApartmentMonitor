@@ -79,11 +79,7 @@ public class UserDAO {
             return false;
         }
 
-        String fetchedPasswordHashed = userdoc.getString("password_hashed");
-        logger.info("\n\n\n\n\n\n\n\n");
-        logger.info(userdoc.getString("email"));
-        logger.info("\n\n\n\n\n\n\n\n");
-
+        String fetchedPasswordHashed = userdoc.getString("passwordHashed");
         //TODO equals can return NullPointerException, should assert the fetch
         if(fetchedPasswordHashed.equals(passwordHash)){
             return true;
