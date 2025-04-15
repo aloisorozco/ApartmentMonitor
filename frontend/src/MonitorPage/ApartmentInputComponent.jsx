@@ -16,12 +16,11 @@ export default function ApartmentInputComponent(props) {
     }
 
     let email = userEmail
-    let targetPrice =  600
     
     fetch("http://localhost:8080/api/apartments/insert", {
       method: "POST",
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: email, target_price : targetPrice, url: url})
+      body: JSON.stringify({ email: email, url: url})
     })
       .then(response => {
         if (response.ok) {
@@ -36,8 +35,8 @@ export default function ApartmentInputComponent(props) {
             // set here the img + description
             title: data.location,
             url: url,
-            targetPrice: 600,
             currentPrice: data.price,
+            image: data.imageLink,
           },
         ]);
         setUrl('');

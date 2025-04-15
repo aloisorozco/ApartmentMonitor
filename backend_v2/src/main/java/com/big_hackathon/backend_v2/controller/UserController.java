@@ -53,6 +53,7 @@ public class UserController {
     //     return userService.updateUser(id);
     // }
 
+    //TODO add user and admin roles. And map delete to @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/delete/{id}")
     public String deleteUser(@PathVariable String id) {
         logger.info("deleteUser endpoint called");

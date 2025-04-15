@@ -1,9 +1,7 @@
 package com.big_hackathon.backend_v2.controller;
 
 import com.big_hackathon.backend_v2.model.Apartment;
-import com.big_hackathon.backend_v2.model.InsertWatchlistTemplate;
 import com.big_hackathon.backend_v2.service.ApartmentService;
-import com.google.cloud.firestore.QueryDocumentSnapshot;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,9 +35,9 @@ public class ApartmentController {
     }
 
     @PostMapping("/insert")
-    public String insertApartment(@RequestBody InsertWatchlistTemplate apartment) {
+    public Apartment insertApartment(@RequestBody Map<String, String> json) {
         logger.info("insertApartment endpoint called");
-        return apartmentService.insertApartment(apartment);
+        return apartmentService.insertApartment(json.get("email"), json.get("url"));
     }
 
     //FIXME figure out use
@@ -49,10 +47,10 @@ public class ApartmentController {
 //        return apartmentService.updateApartment(apartment, id);
 //    }
 
-    @DeleteMapping("/{id}")
-    public String deleteApartment(@PathVariable Long id) {
+    @DeleteMapping("/delete_apartment")
+    public String deleteApartment(@RequestBody Map<String, String> json) {
         logger.info("deleteApartment endpoint called");
-        return apartmentService.deleteApartment(id);
+        return apartmentService.deleteApartment(json.get("email"), json.get("listingId"));
     }
 
 }

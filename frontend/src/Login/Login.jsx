@@ -39,9 +39,6 @@ const Login = () => {
           console.log("Invalid Credentials");
         }
       })
-      .then(data => {
-        console.log(data); //view response data
-      })
       .catch(error => console.log(error));
   };
 

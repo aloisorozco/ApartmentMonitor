@@ -28,7 +28,6 @@ export const AuthProvider = ({ children }) => {
     setUserEmail(email);
     sessionStorage.setItem("authStatus", "true");
     sessionStorage.setItem("userEmail", email);
-    console.log("authStatus and email stored in sessionStorage");
   };
 
   // Logout function to reset auth/email and remove from sessionStorage

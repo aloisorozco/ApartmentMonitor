@@ -27,30 +27,30 @@ public class ApartmentDAO {
     }
 
     @SneakyThrows
-    public boolean saveApartment(Apartment apartment) {
+    public String insertApartment(Apartment apartment, String email) {
         //TODO fix the logic, should take into account the user email
-        DocumentSnapshot lookupApartment = db.collection("apartments").document(apartment.getListingID()).get().get();
+        DocumentSnapshot lookupApartment = db.collection("users").document(email).collection("watchlist").document(apartment.getListingID()).get().get();
         if(lookupApartment.exists()){
             //TODO error middleware could throw an exception
             logger.info("Apartment already exists");
-            return false;
+            return "FAIL";
         }
 
-        //QUESTION we don't need to pass it as an arraylist?
-        WriteResult result = db.collection("apartments").document(apartment.getListingID()).set(apartment).get();
+        WriteResult result = db.collection("users").document(email).collection("watchlist").document(apartment.getListingID()).set(apartment).get();
         logger.info("Created new apartment {} at time {}", apartment.getListingID(), result.getUpdateTime());
 
-        return true;
+        return "SUCCESS";
     }
 
     @SneakyThrows
-    public boolean deleteApartment(Apartment apartment) {
-        ApiFuture<WriteResult> res = db.collection("apartments").document(apartment.getListingID()).delete();
+    public String deleteApartment(String email, String listingId) {
+        ApiFuture<WriteResult> res = db.collection("users").document(Hasher.hashData(email)).collection("watchlist").document(listingId).delete();
 
         // TODO: this will throw an error in the event the .get() fails - we should handle this in error middleware
+        // TODO: so no SneakyThrows?
         WriteResult metadata = res.get();
-        logger.info("Deleted apartment {} at time {}", apartment.getListingID(), metadata.getUpdateTime());
-        return true;
+        logger.info("Deleted apartment {} at time {}", listingId, metadata.getUpdateTime());
+        return "SUCCESS";
     }
 
     //QUESTION should the param just be an object? Or ID, arraylist of values
@@ -62,18 +62,18 @@ public class ApartmentDAO {
     public List<Apartment> fetchWatchlist(String email) {
         String userHash = Hasher.hashData(email);
         //FIXME talk to Daniel if futureapi is needed (this way done here will block the thread)? With futureapi we can set a async call
-        QuerySnapshot snapshot = db.collection("users").document(userHash).collection("watchlist").get().get();;
+        QuerySnapshot snapshot = db.collection("users").document(userHash).collection("watchlist").get().get();
 
         List<QueryDocumentSnapshot> docs = snapshot.getDocuments();
         List<Apartment> apartments = new ArrayList<>();
         for (QueryDocumentSnapshot document : docs) {
-            String listingID = document.getString("listing_id");
+            //TODO since we pass spring objects to our databse, the key value pairs match those
+            String listingID = document.getString("listingID");
             String location = document.getString("location");
-            String imageLink = document.getString("image_link");
+            String imageLink = document.getString("imageLink");
             String url = document.getString("url");
             String description = document.getString("description");
             double price = document.getDouble("price") != null ? document.getDouble("price") : 0.0;
-            double price_target = document.getDouble("price_target") != null ? document.getDouble("price_target") : 0.0;
 
             Apartment apartment = Apartment.builder()
                     .listingID(listingID)
@@ -82,7 +82,6 @@ public class ApartmentDAO {
                     .url(url)
                     .description(description)
                     .price(price)
-                    .priceTarget(price_target)
                     .build();
             apartments.add(apartment);
         }

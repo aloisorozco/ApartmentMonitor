@@ -7,9 +7,10 @@ export default function ApartmentListComponent({ apartmentListings, setApartment
   const { userEmail } = useAuth();
 
   const handleDelete = (listingId) => {
-    fetch(`http://localhost:5500/db_api/remove_listing?email=${userEmail}&listing_id=${listingId}`, {
+    fetch(`http://localhost:8080/api/apartments/delete_apartment`, {
       method: "DELETE",
       headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: userEmail, listingId: listingId})
     })
     .then(response => {
       if (response.ok) {
@@ -29,7 +30,7 @@ export default function ApartmentListComponent({ apartmentListings, setApartment
     <Box sx={{ p: 2, display: "flex", justifyContent: "center" }}>
       <Grid2 container spacing={3} justifyContent="center">
         {apartmentListings.map((listing) => (
-          <Grid2 item xs={12} sm={6} md={4} lg={3} key={listing.id}>
+          <Grid2 key={listing.id}>
             <Card sx={{ width: "100%", borderRadius: 4, boxShadow: 3, overflow: "hidden" }}>
               <CardMedia
                 component="img"
@@ -42,11 +43,8 @@ export default function ApartmentListComponent({ apartmentListings, setApartment
               <CardContent >
                 <Typography variant="h6" fontWeight="bold">{listing.title}</Typography>
                 <Typography color="text.secondary" fontSize={14}>ID: {listing.id}</Typography>
-                <Typography variant="body1" sx={{ mt: 1 }}>
-                  💰 <b>Target Price:</b> ${listing.targetPrice}
-                </Typography>
                 <Typography variant="body1">
-                  🔥 <b>Current Price:</b> ${listing.currentPrice}
+                  🔥 <b>Price:</b> ${listing.currentPrice}
                 </Typography>
                 <Box sx={{ mt: 2, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                   <Button
@@ -69,4 +67,5 @@ export default function ApartmentListComponent({ apartmentListings, setApartment
       </Grid2>
     </Box>
   );
+  
 }

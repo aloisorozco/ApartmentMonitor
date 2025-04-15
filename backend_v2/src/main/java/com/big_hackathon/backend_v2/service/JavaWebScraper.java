@@ -1,29 +1,24 @@
 package com.big_hackathon.backend_v2.service;
 
-import lombok.SneakyThrows;
+
+import com.big_hackathon.backend_v2.model.Apartment;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.Connection.Response;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.UUID;
 
-@Service
 public class JavaWebScraper {
 
-    private final Logger logger = LoggerFactory.getLogger(JavaWebScraper.class);
-
-    public Map<String, String> scrapeKijiji(String path){
+    public static Apartment scrapeKijiji(String path){
         //TODO look into proxy rotation
         String userAgent = "Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:25.0) Gecko/20100101 Firefox/25.0";
         Response response = null;
         Document doc = null;
         try {
+            //Connect to scraping service
             response = Jsoup.connect(path)
                     .userAgent(userAgent)
                     .referrer("http://www.google.com")
@@ -34,34 +29,49 @@ public class JavaWebScraper {
                     .followRedirects(true)
                     .execute();
 
+            //Scrape
             doc = response.parse();
         } catch (IOException e){
-            logger.info("Ran out of time: " + e);
+            System.out.println(e);
         }
 
-        Map<String, String> result = new HashMap<>();
+        Apartment apartment = null;
 
+        //If scraping works
         if(doc != null) {
             //Title
-            String title = doc.getElementsByClass("sc-9d9a3b6-0 cwhKRe").text();
-            result.put("title", title);
+            String description = doc.getElementsByClass("sc-9d9a3b6-0 cwhKRe").text();
 
             // Price
-            String price = doc.getElementsByClass("sc-9d9a3b6-0 bhudfV").text();
-            result.put("price", price);
+            //TODO is this the right approach to convert later on into double?
+            double price = Double.parseDouble(doc.getElementsByClass("sc-9d9a3b6-0 bhudfV").text().replaceAll("[^\\d.]", ""));
 
             // Location
-            Element location = doc.getElementsByClass("sc-c8742e84-0 fukShK").first();
-            if (location != null) {
-                result.put("location", location.text());
+            Element locationElement = doc.getElementsByClass("sc-c8742e84-0 fukShK").first();
+            String location = null;
+            if(locationElement != null){
+                location = locationElement.text();
             }
 
-            //TODO how to scrape image
+            //Image
+            Element image = doc.getElementsByClass("sc-3930aaf4-2 bAqjYF").first();
+            String imageLink = null;
+            if(image != null){
+                imageLink = image.attr("src");
+            }
+
+            //Build apartment
+            apartment = Apartment.builder()
+                    .listingID(UUID.randomUUID().toString())
+                    .description(description)
+                    .price(price)
+                    .location(location)
+                    .imageLink(imageLink)
+                    .url(path)
+                    .build();
         }
 
-        // Original URL
-        result.put("url", path);
-
-        return result;
+        //Return scraped apartment
+        return apartment;
     }
 }
