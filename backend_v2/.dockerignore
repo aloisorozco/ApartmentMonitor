@@ -1,0 +1,11 @@
+# Git metadata
+.git
+.gitignore
+
+# Maven build output
+target/
+
+# Class files
+*.class
+
+cred.json
