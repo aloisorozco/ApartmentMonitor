@@ -2,15 +2,18 @@ version: '3.9'
 
 services:
   frontend:
-    build: ./frontend
+    build:
+      context: ./frontend
     ports:
       - "3000:3000"
     depends_on:
       - backend
 
   backend:
-    build: ./backend
+    build:
+      context: ./backend_v2
+      dockerfile: Dockerfile
     ports:
       - "8080:8080"
     volumes:
-      - ./backend/cred.json:/app/cred.json:ro
+      - ./backend_v2/cred.json:/app/cred.json:ro
