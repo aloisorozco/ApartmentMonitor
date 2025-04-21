@@ -17,6 +17,4 @@ public class Apartment {
     private double price;
 
     private String url;
-
-    private double priceTarget;
 }
