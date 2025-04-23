@@ -25,6 +25,11 @@ public class CustomOAuthSuccessHandler implements AuthenticationSuccessHandler{
         this.clientService = clientService;
     }
     
+    //Custom Auth Success filter - Spring Security allows us to override the default succes filter (which just does some cleanup) and implement our own, which here
+    //reurns the JWT to the frontend, so that every API call is made stateless, and requires the JWT bearer token.
+
+    //We cannot overwrite Spring to NOT create a session, so we still need to add a JWT token validation filter, that will check if the bearer token is valid or not
+    //and block the API call otherwise!
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
             Authentication authentication) throws IOException, ServletException {

@@ -8,8 +8,10 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import com.big_hackathon.backend_v2.filter.CustomOAuthSuccessHandler;
+import com.big_hackathon.backend_v2.filter.OAuthValidationFilter;
 
 import lombok.SneakyThrows;
 
@@ -17,6 +19,11 @@ import lombok.SneakyThrows;
 @EnableWebSecurity
 @EnableMethodSecurity
 public class AuthConfig {
+
+    @Bean
+    OAuthValidationFilter oAuthValidationFilter(){
+        return new OAuthValidationFilter();
+    }
 
     @Bean
     @SneakyThrows
@@ -34,7 +41,8 @@ public class AuthConfig {
             .authorizeHttpRequests(authorizeRequests -> authorizeRequests.anyRequest().authenticated())
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .csrf(csrf -> csrf.disable())
-            .oauth2Login(oauth -> oauth.successHandler(customSuccessHandler));
+            .oauth2Login(oauth -> oauth.successHandler(customSuccessHandler))
+            .addFilterBefore(oAuthValidationFilter(), UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
     
