@@ -29,22 +29,10 @@ public class UserController {
         return userService.getUser(email);
     }
 
-    @PostMapping("/register_user")
-    public ResponseEntity<String> insertUser(@RequestBody Map<String, String> json) {
-        logger.info("Register user endpoint called");
-
-        String email = json.get("email");
-        String password = json.get("password");
-        String fname = json.get("fname");
-        String lname = json.get("lname");
-
-        String result = userService.saveUser(email, password, fname, lname);
-
-        if(Objects.equals(result, "SUCCESS")){
-            return new ResponseEntity<>("Login successful", HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>("Login failed", HttpStatus.UNAUTHORIZED);
-        }
+    @PostMapping("/insert")
+    public String insertUser(@RequestBody String email, @RequestBody String password, @RequestBody String fname, @RequestBody String lname) {
+        logger.info("insertUser endpoint called");
+        return userService.saveUser(email, email, password, fname, lname);
     }
 
     // @PutMapping("/{id}")
@@ -53,7 +41,6 @@ public class UserController {
     //     return userService.updateUser(id);
     // }
 
-    //TODO add user and admin roles. And map delete to @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/delete/{id}")
     public String deleteUser(@PathVariable String id) {
         logger.info("deleteUser endpoint called");
@@ -66,12 +53,14 @@ public class UserController {
 
         String email = json.get("email");
         String password = json.get("password");
-
+        System.out.println(email + " and " + password);
         String result = userService.authUser(email, password);
 
         if(Objects.equals(result, "SUCCESS")){
+            System.out.println("SUCCESSFUL LOGIN");
             return new ResponseEntity<>("Login successful", HttpStatus.OK);
         } else {
+            System.out.println("FAILED LOGIN");
             return new ResponseEntity<>("Login failed", HttpStatus.UNAUTHORIZED);
         }
     }

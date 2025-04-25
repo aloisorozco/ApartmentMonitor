@@ -19,7 +19,7 @@ public class Hasher {
     private static String hashByte2Hex(byte[] hash){
         
         // size of 2 * len of hash since every byte becomes a two char hex value
-        StringBuilder hexString = new StringBuilder(2 * hash.length);
+        StringBuilder hexString = new StringBuilder(2 * hash.length); // StringBuilder is mutable, so its way more efficient to create a string like this - using a normal String object, will create a new one on every char we add.
         for (int i = 0; i < hash.length; i++) {
             String hex = Integer.toHexString(0xff & hash[i]);
             if(hex.length() == 1) {

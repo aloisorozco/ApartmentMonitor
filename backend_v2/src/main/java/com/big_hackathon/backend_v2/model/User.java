@@ -4,7 +4,7 @@ import lombok.*;
 
 @Getter
 @Setter
-@ToString(exclude = "password_hashed")
+@ToString(exclude = "passwordHashed")
 @RequiredArgsConstructor
 @Builder
 public class User {
@@ -19,7 +19,10 @@ public class User {
     private String email;
 
     @NonNull
-    private String password_hashed;
+    private String id;
+
+    @NonNull
+    private String passwordHashed;
     
     @NonNull
     private long createdAt;
