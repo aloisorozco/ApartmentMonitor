@@ -32,7 +32,7 @@ public class UserController {
     @PostMapping("/insert")
     public String insertUser(@RequestBody String email, @RequestBody String password, @RequestBody String fname, @RequestBody String lname) {
         logger.info("insertUser endpoint called");
-        return userService.saveUser(email, password, fname, lname);
+        return userService.saveUser(email, email, password, fname, lname);
     }
 
     // @PutMapping("/{id}")

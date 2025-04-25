@@ -16,8 +16,6 @@ public class BackendV2Application {
 		ConfigurableApplicationContext context = SpringApplication.run(BackendV2Application.class, args);
 
 		UserService us = context.getBean(UserService.class);
-
-		System.out.println(us.saveUser(testEmail, pass, "spring", "spring_last"));
 	}
 
 }

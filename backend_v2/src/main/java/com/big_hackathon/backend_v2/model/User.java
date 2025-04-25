@@ -19,6 +19,9 @@ public class User {
     private String email;
 
     @NonNull
+    private String id;
+
+    @NonNull
     private String passwordHashed;
     
     @NonNull

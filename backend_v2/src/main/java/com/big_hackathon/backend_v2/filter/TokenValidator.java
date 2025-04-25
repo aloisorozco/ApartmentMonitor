@@ -6,13 +6,16 @@ import java.util.Map;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtDecoders;
+import org.springframework.stereotype.Component;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.SneakyThrows;
 
+@Component
 public class TokenValidator {
 
-    public static Jwt getSub(String accessToken){
+    public Jwt getSub(String accessToken){
         Map<String, Object> jwtParsed = getIssuerId(accessToken);
         String issUrl = (String) jwtParsed.get("iss");
 
@@ -23,7 +26,7 @@ public class TokenValidator {
 
     // we are manually parsing the JWT here for the sole purposs of retrieving the iss - the actual JWT validation is done later.
     @SneakyThrows
-    private static Map<String, Object>  getIssuerId(String jwt){
+    private Map<String, Object>  getIssuerId(String jwt){
 
         String[] s = jwt.split("\\");
 

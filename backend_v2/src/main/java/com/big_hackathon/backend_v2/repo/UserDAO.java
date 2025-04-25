@@ -39,9 +39,9 @@ public class UserDAO {
 
     @SneakyThrows
     public boolean saveUser(User user){
-        String emailHash = Hasher.hashData(user.getEmail());
+        String idHash = Hasher.hashData(user.getId());
 
-        DocumentSnapshot userDoc = db.collection("users").document(emailHash).get().get();
+        DocumentSnapshot userDoc = db.collection("users").document(idHash).get().get();
         if(userDoc.exists()){
 
             // TODO: throw custom error and handle it in error middelware
@@ -50,7 +50,7 @@ public class UserDAO {
         }
 
 
-        WriteResult result = db.collection("users").document(emailHash).set(user).get();
+        WriteResult result = db.collection("users").document(idHash).set(user).get();
         logger.info("Created new user " +  user.getEmail() + " at time " + result.getUpdateTime());
 
         return true;
@@ -92,12 +92,12 @@ public class UserDAO {
     // }
 
     @SneakyThrows
-    public DocumentSnapshot getUser(String email){
+    public DocumentSnapshot getUser(String id){
 
-        String hashedEmail = Hasher.hashData(email);
+        String hashedEmail = Hasher.hashData(id);
         DocumentSnapshot userDoc = db.collection("users").document(hashedEmail).get().get();
         if(!userDoc.exists()){
-            logger.info("User " + email + " does not exist");
+            logger.info("User " + id + " does not exist");
             return null;
         }
 

@@ -3,6 +3,7 @@ package com.big_hackathon.backend_v2.filter;
 import java.io.IOException;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -17,12 +18,26 @@ import jakarta.servlet.http.HttpServletResponse;
 @Component
 public class OAuthValidationFilter extends OncePerRequestFilter {
 
+    private final TokenValidator jwtUtil;
+
+    @Autowired
+    public OAuthValidationFilter(TokenValidator jwtUtil){
+        this.jwtUtil = jwtUtil;
+    }
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        String token = extractJwtBearer(request);
+        String path = request.getRequestURI();
 
+        // TODO: check if this is a viable way of bypassing the path restrictions
+        if (path.equals("/") || path.startsWith("/oauth2") || path.equals("/login")) {
+            filterChain.doFilter(request, response); // continue without JWT validation
+            return;
+        }
+
+        String token = extractJwtBearer(request);
+        
         if(token != null){
-            Jwt jwt = TokenValidator.getSub(token);
+            Jwt jwt = jwtUtil.getSub(token);
             if(jwt == null){
                 response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid token");
                 return;

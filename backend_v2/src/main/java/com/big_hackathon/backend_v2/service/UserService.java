@@ -28,16 +28,26 @@ public class UserService {
         String password = userDoc.getString("passwordHashed");
         long createdAt = userDoc.getLong("createdAt");
 
-        return User.builder().firstName(fname).lastName(lname).email(email).passwordHashed(password).createdAt(createdAt).build();
+        return User.builder().firstName(fname).lastName(lname).email(email).id(email).passwordHashed(password).createdAt(createdAt).build();
     }
 
-    public String saveUser(String email, String password, String fname, String lname) {
+    public String saveUser(String id, String email, String password, String fname, String lname) {
 
         long createAt = System.currentTimeMillis() / 1000L;
         String passwordHash = Hasher.hashData(password);
-        User newUser = User.builder().email(email).passwordHashed(passwordHash).firstName(fname).lastName(lname).createdAt(createAt).build();
+        User newUser = User.builder().id(id).email(email).passwordHashed(passwordHash).firstName(fname).lastName(lname).createdAt(createAt).build();
 
         return (userDAO.saveUser(newUser) ? "SUCCESS" : "FAIL");
+    }
+
+    public boolean exists(String id){
+
+        DocumentSnapshot userDoc = userDAO.getUser(id);
+        if(userDoc == null){
+            return false;
+        }
+
+        return true;
     }
 
     // public String updateUser(Long id) {
