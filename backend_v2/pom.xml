@@ -30,10 +30,17 @@
 		<java.version>17</java.version>
 	</properties>
 		<dependencies>
-			<dependency>
+		<dependency>
 			<groupId>io.jsonwebtoken</groupId>
 			<artifactId>jjwt-api</artifactId>
 			<version>0.11.5</version>
+		</dependency>
+		<dependency>
+			<groupId>org.jsoup</groupId>
+            <artifactId>jsoup</artifactId>
+            <version>1.19.1</version>
+            <scope>system</scope>
+            <systemPath>${pom.basedir}/libs/jsoup-1.19.1.jar</systemPath>
 		</dependency>
 		<dependency>
 			<groupId>io.jsonwebtoken</groupId>
