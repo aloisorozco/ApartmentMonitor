@@ -18,10 +18,10 @@ import jakarta.servlet.http.HttpServletResponse;
 @Component
 public class OAuthValidationFilter extends OncePerRequestFilter {
 
-    private final TokenValidator jwtUtil;
+    private final JwtUtil jwtUtil;
 
     @Autowired
-    public OAuthValidationFilter(TokenValidator jwtUtil){
+    public OAuthValidationFilter(JwtUtil jwtUtil){
         this.jwtUtil = jwtUtil;
     }
     @Override

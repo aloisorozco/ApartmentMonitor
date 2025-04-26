@@ -12,7 +12,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 import com.big_hackathon.backend_v2.filter.CustomOAuthSuccessHandler;
 import com.big_hackathon.backend_v2.filter.OAuthValidationFilter;
-import com.big_hackathon.backend_v2.filter.TokenValidator;
+import com.big_hackathon.backend_v2.filter.JwtUtil;
 
 import lombok.SneakyThrows;
 
@@ -22,7 +22,7 @@ import lombok.SneakyThrows;
 public class AuthConfig {
 
     @Autowired
-    private TokenValidator jwtUtil; 
+    private JwtUtil jwtUtil; 
 
     @Bean
     @SneakyThrows

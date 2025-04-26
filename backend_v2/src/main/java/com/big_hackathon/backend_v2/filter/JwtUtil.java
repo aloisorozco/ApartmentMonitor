@@ -1,5 +1,8 @@
 package com.big_hackathon.backend_v2.filter;
 
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
 import java.util.Map;
 
@@ -13,7 +16,26 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.SneakyThrows;
 
 @Component
-public class TokenValidator {
+public class JwtUtil {
+
+    private KeyPairGenerator keyPairGenerator;
+    private KeyPair keyPair;
+
+    public JwtUtil() throws NoSuchAlgorithmException{
+
+        // KeyPairGenerator to make RSA encrypted keys
+        this.keyPairGenerator = KeyPairGenerator.getInstance("RSA");
+
+        // set up generator to create keys that are 2048 bits in length - 2048 is a good balance between security and generation speed (can make 4096 for extra security)
+        this.keyPairGenerator.initialize(2048);
+        this.keyPair = this.keyPairGenerator.generateKeyPair();
+    }
+
+    
+    public String generateJWT(){
+        // TOOD: implement
+        return null;
+    }
 
     public Jwt getSub(String accessToken){
         Map<String, Object> jwtParsed = getIssuerId(accessToken);

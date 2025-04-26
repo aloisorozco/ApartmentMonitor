@@ -18,17 +18,18 @@ public class UserService {
         this.userDAO = userDAO;
     }
 
-    public User getUser(String email) {
+    public User getUser(String id) {
 
-        DocumentSnapshot userDoc = userDAO.getUser(email);
+        DocumentSnapshot userDoc = userDAO.getUser(id);
 
         //TODO potential error, variables return null, we need to check for that
         String fname = userDoc.getString("fname");
         String lname = userDoc.getString("lname");
+        String email = userDoc.getString("email");
         String password = userDoc.getString("passwordHashed");
         long createdAt = userDoc.getLong("createdAt");
 
-        return User.builder().firstName(fname).lastName(lname).email(email).id(email).passwordHashed(password).createdAt(createdAt).build();
+        return User.builder().id(id).firstName(fname).lastName(lname).email(email).id(email).passwordHashed(password).createdAt(createdAt).build();
     }
 
     public String saveUser(String id, String email, String password, String fname, String lname) {
@@ -58,7 +59,7 @@ public class UserService {
         return (userDAO.delUser(id) ? "SUCCESS" : "FAIL");
     }
 
-    public String authUser(String email, String password) {
-        return (userDAO.authUser(email, password) ? "SUCCESS" : "FAIL");
+    public String authUser(String id, String password) {
+        return (userDAO.authUser(id, password) ? "SUCCESS" : "FAIL");
     }
 }

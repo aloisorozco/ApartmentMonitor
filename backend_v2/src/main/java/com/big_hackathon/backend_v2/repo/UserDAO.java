@@ -57,25 +57,25 @@ public class UserDAO {
     }
 
     @SneakyThrows
-    public boolean delUser(String email){
-        String emailHash = Hasher.hashData(email);
-        ApiFuture<WriteResult> res = db.collection("users").document(emailHash).delete();
+    public boolean delUser(String id){
+        String hashedId = Hasher.hashData(id);
+        ApiFuture<WriteResult> res = db.collection("users").document(hashedId).delete();
 
         // TODO: this will throw an error in the event the .get() fails - we should handle this in error middleware
         WriteResult metadata = res.get();
-        logger.info("Deleted user " +  email + " at time " + metadata.getUpdateTime());
+        logger.info("Deleted user " +  id + " at time " + metadata.getUpdateTime());
         return true;
     }
 
     @SneakyThrows
-    public boolean authUser(String email, String password){
-        String userHash = Hasher.hashData(email);
+    public boolean authUser(String id, String password){
+        String userHash = Hasher.hashData(id);
         String passwordHash = Hasher.hashData(password);
         ApiFuture<DocumentSnapshot> userQuerry = db.collection("users").document(userHash).get();
         DocumentSnapshot userdoc = userQuerry.get();
 
         if(!userdoc.exists()){
-            logger.info("User with email " + email + " does not exist in DB");
+            logger.info("User with id " + id + " does not exist in DB");
             return false;
         }
 
@@ -94,8 +94,8 @@ public class UserDAO {
     @SneakyThrows
     public DocumentSnapshot getUser(String id){
 
-        String hashedEmail = Hasher.hashData(id);
-        DocumentSnapshot userDoc = db.collection("users").document(hashedEmail).get().get();
+        String hashedId = Hasher.hashData(id);
+        DocumentSnapshot userDoc = db.collection("users").document(hashedId).get().get();
         if(!userDoc.exists()){
             logger.info("User " + id + " does not exist");
             return null;

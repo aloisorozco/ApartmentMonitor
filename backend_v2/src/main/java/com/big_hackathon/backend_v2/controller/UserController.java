@@ -24,9 +24,9 @@ public class UserController {
     }
 
     @GetMapping("/get/{id}")
-    public User getUser(@PathVariable String email) {
+    public User getUser(@PathVariable String id) {
         logger.info("getUser endpoint called");
-        return userService.getUser(email);
+        return userService.getUser(id);
     }
 
     @PostMapping("/insert")
