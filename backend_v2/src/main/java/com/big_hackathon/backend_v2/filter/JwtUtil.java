@@ -33,7 +33,8 @@ import lombok.SneakyThrows;
 @Component
 public class JwtUtil {
 
-    // TODO: check for token expiry time (validation) + refresh token if token is expired
+    // TODO:refresh token if token is valid but expired - add /refresh endpoint and make frontend call it with refresh token (stored as cookie)
+    // we need to save the refresh token into DB (1 refresh per user), and overrite everytime we generate a new refresh token for that user.
     Logger logger = LoggerFactory.getLogger(ApartmentController.class);
 
     private KeyPairGenerator keyPairGenerator;
@@ -64,6 +65,11 @@ public class JwtUtil {
         return tokenBuilder.sign(Algorithm.RSA256((RSAPublicKey) keyPair.getPublic(), (RSAPrivateKey) keyPair.getPrivate()));
     }
 
+    public boolean isExpired(Jwt token){
+        Date now = Date.from(Instant.now());
+        return now.after(Date.from(token.getExpiresAt()));
+    }
+
     public Jwt decodeNativeToken(String encodedToken){
         Algorithm rsaAlgo = Algorithm.RSA256((RSAPublicKey) keyPair.getPublic(), (RSAPrivateKey) keyPair.getPrivate());
         try{
@@ -81,8 +87,8 @@ public class JwtUtil {
                     entry -> entry.getKey(),
                     entry -> entry.getValue().toString()
                 ));
-
-            return new Jwt(jwtDecoded.getToken(), jwtDecoded.getIssuedAt().toInstant(), jwtDecoded.getExpiresAt().toInstant(), headers, claims);
+            Jwt token = new Jwt(jwtDecoded.getToken(), jwtDecoded.getIssuedAt().toInstant(), jwtDecoded.getExpiresAt().toInstant(), headers, claims);
+            return isExpired(token) ? null : token;
         }catch(Exception e){
             logger.info("Passed JWT token is invalid: " +  e.getMessage());
             return null;
