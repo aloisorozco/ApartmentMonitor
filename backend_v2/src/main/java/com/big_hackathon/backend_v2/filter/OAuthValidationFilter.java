@@ -37,7 +37,7 @@ public class OAuthValidationFilter extends OncePerRequestFilter {
         String token = extractJwtBearer(request);
         
         if(token != null){
-            Jwt jwt = jwtUtil.getSub(token);
+            Jwt jwt = jwtUtil.decodeToken(token);
             if(jwt == null){
                 response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid token");
                 return;
