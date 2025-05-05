@@ -1,6 +1,7 @@
 package com.big_hackathon.backend_v2.service;
 
 
+import com.big_hackathon.backend_v2.DTO.ApartmentDTO;
 import com.big_hackathon.backend_v2.model.Apartment;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -8,7 +9,6 @@ import org.jsoup.nodes.Element;
 import org.jsoup.Connection.Response;
 
 import java.io.IOException;
-import java.util.UUID;
 
 public class JavaWebScraper {
 
@@ -61,14 +61,7 @@ public class JavaWebScraper {
             }
 
             //Build apartment
-            apartment = Apartment.builder()
-                    .listingID(UUID.randomUUID().toString())
-                    .description(description)
-                    .price(price)
-                    .location(location)
-                    .imageLink(imageLink)
-                    .url(path)
-                    .build();
+            apartment = new Apartment(price, location, description, imageLink, path);
         }
 
         //Return scraped apartment

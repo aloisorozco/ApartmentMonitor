@@ -17,13 +17,14 @@ export default function MonitorPage() {
         .then(res => res.json())
         .then(data => {
           let listings_fetched = (data ?? []).map((listing) => {
+            console.log(listing)
             return {
-              id: listing.listingID,
-              title: listing.location,
-              url: listing.url,
-              targetPrice: listing.price_target,
-              currentPrice: listing.price,
-              image: listing.imageLink,
+              id: listing.apartment_id,
+              title: listing.apartment_description,
+              url: listing.apartment_url,
+              targetPrice: null,
+              currentPrice: listing.apartment_price,
+              image: listing.apartment_image_link,
             };
           });
           setApartmentListings([

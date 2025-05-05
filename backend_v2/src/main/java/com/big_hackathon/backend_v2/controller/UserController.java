@@ -1,22 +1,18 @@
 package com.big_hackathon.backend_v2.controller;
 
-import com.big_hackathon.backend_v2.model.User;
 import com.big_hackathon.backend_v2.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.Map;
-import java.util.Objects;
 
 @RestController
 @RequestMapping("/api/users")
 public class UserController {
 
     private final UserService userService;
-
     Logger logger = LoggerFactory.getLogger(ApartmentController.class);
 
     public UserController(UserService userService) {
@@ -24,9 +20,14 @@ public class UserController {
     }
 
     @GetMapping("/get/{id}")
-    public User getUser(@PathVariable String email) {
+    public ResponseEntity<?> getUser(@PathVariable String email) {
         logger.info("getUser endpoint called");
-        return userService.getUser(email);
+        try{
+            return ResponseEntity.status(HttpStatus.OK).body(userService.getUser(email));
+        } catch (Exception e) {
+            logger.error("Error retrieving user: {}", e.getMessage());
+            return new ResponseEntity<>("Retrieving user failed", HttpStatus.BAD_REQUEST);
+        }
     }
 
     @PostMapping("/register_user")
@@ -38,12 +39,12 @@ public class UserController {
         String fname = json.get("fname");
         String lname = json.get("lname");
 
-        String result = userService.saveUser(email, password, fname, lname);
-
-        if(Objects.equals(result, "SUCCESS")){
-            return new ResponseEntity<>("Login successful", HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>("Login failed", HttpStatus.UNAUTHORIZED);
+        try {
+            userService.saveUser(email, password, fname, lname);
+            return new ResponseEntity<>("Registration successful", HttpStatus.CREATED);
+        } catch (Exception e) {
+            logger.error("Error registering user: {}", e.getMessage());
+            return new ResponseEntity<>("Registration failed", HttpStatus.BAD_REQUEST);
         }
     }
 
@@ -54,26 +55,24 @@ public class UserController {
     // }
 
     //TODO add user and admin roles. And map delete to @PreAuthorize("hasRole('ADMIN')")
-    @DeleteMapping("/delete/{id}")
-    public String deleteUser(@PathVariable String id) {
+    @DeleteMapping("/delete")
+    public ResponseEntity<String> deleteUser(@RequestBody String email) {
         logger.info("deleteUser endpoint called");
-        return userService.deleteUser(id);
+        try{
+            userService.deleteUser(email);
+            return new ResponseEntity<>("Delete user successful", HttpStatus.OK);
+        } catch (Exception e){
+            logger.error("Error deleting user: {}", e.getMessage());
+            return new ResponseEntity<>("Delete user failed", HttpStatus.BAD_REQUEST);
+        }
     }
 
     @PostMapping("/auth_user")
     public ResponseEntity<String> authUser(@RequestBody Map<String, String> json) {
         logger.info("Authenticate user endpoint called");
+        return new ResponseEntity<>("Delete user successful", HttpStatus.OK);
 
-        String email = json.get("email");
-        String password = json.get("password");
-
-        String result = userService.authUser(email, password);
-
-        if(Objects.equals(result, "SUCCESS")){
-            return new ResponseEntity<>("Login successful", HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>("Login failed", HttpStatus.UNAUTHORIZED);
-        }
+        //TODO will be changed with OAuth and JWT
     }
 
 }
