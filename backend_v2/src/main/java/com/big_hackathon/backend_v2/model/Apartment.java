@@ -11,6 +11,7 @@ import lombok.*;
 @NoArgsConstructor
 public class Apartment {
 
+    //TODO: unique ID should be GeoCache ID
     @Id //Primary Key
     @Column(name = "listing_id", nullable = false)
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "apart_seq_generator")
