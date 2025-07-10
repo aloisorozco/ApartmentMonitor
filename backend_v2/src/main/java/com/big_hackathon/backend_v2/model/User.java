@@ -31,6 +31,9 @@ public class User {
     @Column(name = "email")
     private String email;
 
+    @Column(name = "authority")
+    private String authority;
+
     @Column(name = "password_hash")
     private String hashedPassword;
 
