@@ -14,7 +14,6 @@ import org.springframework.security.web.authentication.AuthenticationSuccessHand
 import org.springframework.stereotype.Component;
 
 import com.big_hackathon.backend_v2.controller.ApartmentController;
-import com.big_hackathon.backend_v2.repo.UserDAO;
 import com.big_hackathon.backend_v2.service.UserService;
 
 import jakarta.servlet.ServletException;

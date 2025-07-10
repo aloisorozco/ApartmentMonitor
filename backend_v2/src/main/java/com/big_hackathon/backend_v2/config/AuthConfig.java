@@ -38,7 +38,6 @@ public class AuthConfig {
         http.csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(authorizeRequests -> authorizeRequests.anyRequest().authenticated())
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .csrf(csrf -> csrf.disable())
             .oauth2Login(oauth -> oauth.successHandler(customSuccessHandler))
             .addFilterBefore(new OAuthValidationFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class);
         return http.build();

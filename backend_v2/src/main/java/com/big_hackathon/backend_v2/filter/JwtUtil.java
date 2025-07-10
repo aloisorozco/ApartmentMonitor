@@ -50,7 +50,7 @@ public class JwtUtil {
 
         // set up generator to create keys that are 2048 bits in length - 2048 is a good balance between security and generation speed (can make 4096 for extra security)
         this.keyPairGenerator.initialize(2048);
-        this.keyPair = this.keyPairGenerator.generateKeyPair(); // TODO: save keys to a file to persist between code re-runs, othwerwise old users won't be able to sign in.
+        this.keyPair = this.keyPairGenerator.generateKeyPair();
     }
 
     public String generateJWT(Map<String, String> payload){
@@ -112,7 +112,7 @@ public class JwtUtil {
 
     // we are manually parsing the JWT here for the sole purposs of retrieving the iss - the actual JWT validation is done later.
     @SneakyThrows
-    private Map<String, Object>  getIssuerId(String jwt){
+    private Map<String, Object> getIssuerId(String jwt){
 
         String[] s = jwt.split("\\");
 
