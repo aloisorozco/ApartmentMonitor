@@ -1,10 +1,12 @@
 package com.big_hackathon.backend_v2.controller;
 
-import com.big_hackathon.backend_v2.model.Apartment;
+import com.big_hackathon.backend_v2.DTO.ApartmentDTO;
 import com.big_hackathon.backend_v2.service.ApartmentService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -21,22 +23,27 @@ public class ApartmentController {
         this.apartmentService = apartmentService;
     }
 
-    @GetMapping("/")
-    public List<Apartment> getUserWatchlist() {
-        logger.info("listApartments endpoint called");
-        return apartmentService.getWatchlist();
+    @GetMapping("/fetch_watchlist")
+    public ResponseEntity<?> getUserWatchlist(@RequestParam  String email) {
+        logger.info("getUserWatchlist endpoint called");
+        return ResponseEntity.status(HttpStatus.OK).body(apartmentService.getWatchlist(email));
     }
 
-    @GetMapping("/{id}")
-    public String getApartment(@PathVariable Long id) {
-        logger.info("getApartment endpoint called");
-        return apartmentService.getApartment(id);
-    }
+//    @GetMapping("/{id}")
+//    public String getApartment(@PathVariable Long id) {
+//        logger.info("getApartment endpoint called");
+//        return apartmentService.getApartment(id);
+//    }
 
     @PostMapping("/insert")
-    public String insertApartment(@RequestBody Apartment apartment) {
+    public ResponseEntity<?> insertApartment(@RequestBody Map<String, String> json) {
         logger.info("insertApartment endpoint called");
-        return apartmentService.insertApartment(apartment);
+        try{
+            return ResponseEntity.status(HttpStatus.OK).body(apartmentService.insertApartment(json.get("email"), json.get("url")));
+        } catch (Exception e) {
+            logger.error("Error inserting apartment: {}", e.getMessage());
+            return new ResponseEntity<>("Adding apartment failed", HttpStatus.BAD_REQUEST);
+        }
     }
 
     //FIXME figure out use
@@ -46,10 +53,16 @@ public class ApartmentController {
 //        return apartmentService.updateApartment(apartment, id);
 //    }
 
-    @DeleteMapping("/{id}")
-    public String deleteApartment(@PathVariable Long id) {
+    @DeleteMapping("/delete_apartment")
+    public ResponseEntity<String> deleteApartment(@RequestBody Map<String, String> json) {
         logger.info("deleteApartment endpoint called");
-        return apartmentService.deleteApartment(id);
+        try{
+            apartmentService.deleteApartment(json.get("email"), Long.valueOf(json.get("listingId")));
+            return new ResponseEntity<>("Deleting apartment successful", HttpStatus.OK);
+        } catch (Exception e) {
+            logger.error("Error deleting apartment: {}", e.getMessage());
+            return new ResponseEntity<>("Deleting apartment failed", HttpStatus.BAD_REQUEST);
+        }
     }
 
 }

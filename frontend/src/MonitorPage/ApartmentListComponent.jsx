@@ -10,15 +10,16 @@ export default function ApartmentListComponent({ apartmentListings, setApartment
     fetch(`http://localhost:5500/db_api/remove_listing?email=${userEmail}&listing_id=${listingId}`, {
       method: "DELETE",
       headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: userEmail, listingId: listingId })
     })
-    .then(response => {
-      if (response.ok) {
-        setApartmentListings(prevListings => prevListings.filter(listing => listing.id !== listingId));
-      } else {
-        console.log("Error deleting the listing");
-      }
-    })
-    .catch(error => console.log("Error:", error));
+      .then(response => {
+        if (response.ok) {
+          setApartmentListings(prevListings => prevListings.filter(listing => listing.id !== listingId));
+        } else {
+          console.log("Error deleting the listing");
+        }
+      })
+      .catch(error => console.log("Error:", error));
   };
 
   if (apartmentListings.length === 0) {

@@ -69,3 +69,4 @@ buildNumber.properties
 *.class
 *.properties
 *.properties
+.vscode/settings.json

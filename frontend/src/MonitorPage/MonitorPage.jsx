@@ -27,16 +27,26 @@ export default function MonitorPage() {
           image: listing.image_link,
         }
       })
-      // This should cause the table re-render and set all items in the user watchlist
-      setApartmentListings([
-        ...apartmentListings,
-        ...listings_fetched
-      ])
-    })
-    .catch(error => console.log(error))
-    // passing empty array here so useEffect is called once on mount, and never again - without this we are in a infinite render loop
-    // since we fetch listings, set state, and then re-render causing another fetch listing, and set state and so on
-  }, []) 
+        .then(res => res.json())
+        .then(data => {
+          let listings_fetched = (data ?? []).map((listing) => {
+            console.log(listing)
+            return {
+              id: listing.apartment_id,
+              title: listing.apartment_description,
+              url: listing.apartment_url,
+              targetPrice: null,
+              currentPrice: listing.apartment_price,
+              image: listing.apartment_image_link,
+            };
+          });
+          setApartmentListings([
+            ...apartmentListings,
+            ...listings_fetched
+          ]);
+        })
+        .catch(error => console.log(error));
+  }, [userEmail]);
 
   return (
     <Box sx={{ flexGrow: 1 }}>

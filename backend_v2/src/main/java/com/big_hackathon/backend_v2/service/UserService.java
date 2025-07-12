@@ -1,12 +1,13 @@
 package com.big_hackathon.backend_v2.service;
 
+import com.big_hackathon.backend_v2.DTO.UserDTO;
+import com.big_hackathon.backend_v2.model.Apartment;
 import com.big_hackathon.backend_v2.model.Hasher;
 import com.big_hackathon.backend_v2.model.User;
 import com.big_hackathon.backend_v2.repo.UserDAO;
-import com.google.cloud.firestore.DocumentSnapshot;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import java.util.ArrayList;
 
 @Service
 public class UserService {
@@ -18,27 +19,22 @@ public class UserService {
         this.userDAO = userDAO;
     }
 
-    public User getUser(String id) {
+    public UserDTO getUser(String email) {
 
-        DocumentSnapshot userDoc = userDAO.getUser(id);
-
-        //TODO potential error, variables return null, we need to check for that
-        String fname = userDoc.getString("fname");
-        String lname = userDoc.getString("lname");
-        String email = userDoc.getString("email");
-        String password = userDoc.getString("passwordHashed");
-        long createdAt = userDoc.getLong("createdAt");
-
-        return User.builder().id(id).firstName(fname).lastName(lname).email(email).id(email).passwordHashed(password).createdAt(createdAt).build();
+        return userDAO.findByEmail(email)
+                .map(UserDTO::new)
+                .orElseThrow(() -> new RuntimeException("User not found"));
     }
 
-    public String saveUser(String id, String email, String password, String fname, String lname) {
-
-        long createAt = System.currentTimeMillis() / 1000L;
-        String passwordHash = Hasher.hashData(password);
-        User newUser = User.builder().id(id).email(email).passwordHashed(passwordHash).firstName(fname).lastName(lname).createdAt(createAt).build();
-
-        return (userDAO.saveUser(newUser) ? "SUCCESS" : "FAIL");
+    public void saveUser(String email, String password, String fname, String lname) {
+        userDAO.save(User
+                .builder()
+                .email(email)
+                .hashedPassword(Hasher.hashData(password))
+                .firstName(fname)
+                .lastName(lname)
+                .apartments(new ArrayList<Apartment>())
+                .build());
     }
 
     public boolean exists(String id){
@@ -55,11 +51,14 @@ public class UserService {
     //     return "TODO - Set up DB Access first";
     // }
 
-    public String deleteUser(String id) {
-        return (userDAO.delUser(id) ? "SUCCESS" : "FAIL");
+    public void deleteUser(String email) {
+        userDAO.deleteById(userDAO.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"))
+                .getUserID());
     }
 
-    public String authUser(String id, String password) {
-        return (userDAO.authUser(id, password) ? "SUCCESS" : "FAIL");
+    public String authUser(String email, String password) {
+//        return (userDAO.authUser(email, password) ? "SUCCESS" : "FAIL");
+        return null;
     }
 }
