@@ -49,18 +49,16 @@ public class CustomOAuthSuccessHandler implements AuthenticationSuccessHandler{
             if(authToken.getPrincipal() instanceof OidcUser){
                 OidcUser oidcUsr = (OidcUser) authToken.getPrincipal();
                 idToken = oidcUsr.getIdToken().getTokenValue();
-                
-                String usrID = oidcUsr.getClaim("iss") + "-" + oidcUsr.getClaim("sub");
 
-                if(!usrService.exists(usrID)){
-                    String email = oidcUsr.getClaim("email");
-                    String[] fullName = oidcUsr.getClaim("name").toString().split(" ");
-                    String fname = fullName.length == 1 ? fullName[0] : "";
-                    String lname = fullName.length == 2 ? fullName[1] : "";
+                // Should be impossible for user to not exist -> User retreiver earlier from DB
+                String email = oidcUsr.getClaim("email");
+                String[] fullName = oidcUsr.getClaim("name").toString().split(" ");
+                String fname = fullName.length == 1 ? fullName[0] : "";
+                String lname = fullName.length == 2 ? fullName[1] : "";
 
-                    usrService.saveUser(usrID, email, "",fname, lname);
-                    logger.info("[OAuth] Created user with email " + email + "on first sign in using OAuth.");
-                }
+                usrService.saveUser(email, "" ,fname, lname);
+                logger.info("[OAuth] Created user with email " + email + "on first sign in using OAuth.");
+
                 logger.info("[OAuth] user already exist, authenticated using OAuth.");
             }
 

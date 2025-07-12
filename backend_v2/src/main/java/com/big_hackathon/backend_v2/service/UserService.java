@@ -37,16 +37,6 @@ public class UserService {
                 .build());
     }
 
-    public boolean exists(String id){
-
-        DocumentSnapshot userDoc = userDAO.getUser(id);
-        if(userDoc == null){
-            return false;
-        }
-
-        return true;
-    }
-
     // public String updateUser(Long id) {
     //     return "TODO - Set up DB Access first";
     // }

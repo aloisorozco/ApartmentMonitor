@@ -54,4 +54,5 @@ export default function MonitorPage() {
       <ApartmentListComponent apartmentListings={apartmentListings} setApartmentListings={setApartmentListings}/>
     </Box>
   );
+})
 }
