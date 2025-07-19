@@ -19,6 +19,8 @@ public class SpringSUser implements UserDetails{
         return List.of(() -> this.user.getAuthority());
     }
 
+    // Spring will use this method to compare passowrds
+    // TODO: keep plain text for testing, but should we encrypt stuff on the DB side, we would need to overwrite the PasswordEncoder Bean with a custom passowrd matching implementation.
     @Override
     public String getPassword() {
         return this.user.getHashedPassword().toString();

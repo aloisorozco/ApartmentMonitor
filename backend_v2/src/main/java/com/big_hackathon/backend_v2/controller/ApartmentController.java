@@ -1,15 +1,12 @@
 package com.big_hackathon.backend_v2.controller;
 
-import com.big_hackathon.backend_v2.DTO.ApartmentDTO;
 import com.big_hackathon.backend_v2.service.ApartmentService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -19,7 +16,6 @@ public class ApartmentController {
     private final ApartmentService apartmentService;
     Logger logger = LoggerFactory.getLogger(ApartmentController.class);
 
-    @Autowired
     public ApartmentController(ApartmentService apartmentService) {
         this.apartmentService = apartmentService;
     }

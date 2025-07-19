@@ -4,14 +4,12 @@ import java.io.IOException;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
-import org.springframework.stereotype.Component;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-@Component
-public class CustomOAuthSuccessHandler implements AuthenticationSuccessHandler{
+public class CustomAuthSuccessHandler implements AuthenticationSuccessHandler{
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
@@ -19,6 +17,5 @@ public class CustomOAuthSuccessHandler implements AuthenticationSuccessHandler{
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'onAuthenticationSuccess'");
     }
-
     
 }

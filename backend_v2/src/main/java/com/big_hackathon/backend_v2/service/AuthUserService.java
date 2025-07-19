@@ -3,11 +3,13 @@ package com.big_hackathon.backend_v2.service;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.stereotype.Component;
 
 import com.big_hackathon.backend_v2.model.SpringSUser;
 import com.big_hackathon.backend_v2.model.User;
 import com.big_hackathon.backend_v2.repo.UserDAO;
 
+@Component
 public class AuthUserService implements UserDetailsService{
 
     private final UserDAO userRepo;

@@ -46,9 +46,4 @@ public class UserService {
                 .orElseThrow(() -> new RuntimeException("User not found"))
                 .getUserID());
     }
-
-    public String authUser(String email, String password) {
-//        return (userDAO.authUser(email, password) ? "SUCCESS" : "FAIL");
-        return null;
-    }
 }

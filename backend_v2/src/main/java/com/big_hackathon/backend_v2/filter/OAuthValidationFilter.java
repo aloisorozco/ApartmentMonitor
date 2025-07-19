@@ -3,7 +3,6 @@ package com.big_hackathon.backend_v2.filter;
 import java.io.IOException;
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -15,25 +14,29 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+// OncePerRequestFilter = filter guaranteed to execute only once per request
 @Component
 public class OAuthValidationFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
 
-    @Autowired
     public OAuthValidationFilter(JwtUtil jwtUtil){
         this.jwtUtil = jwtUtil;
     }
-    @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        String path = request.getRequestURI();
 
-        // TODO: check if this is a viable way of bypassing the path restrictions
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request){
+        String path = request.getRequestURI();
+        
         if (path.equals("/") || path.startsWith("/oauth2") || path.equals("/login")) {
-            filterChain.doFilter(request, response); // continue without JWT validation
-            return;
+            return true; // true = do not filter request to check if it has JWT on loggin
         }
 
+        return false; // false = filter request to check if it has JWT
+    }
+
+    @Override
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         String token = extractJwtBearer(request);
         
         if(token != null){
@@ -49,8 +52,12 @@ public class OAuthValidationFilter extends OncePerRequestFilter {
             // this just tells spring "I manually verified this user, here is an object representing them, add it to the context, and allow them to access the APIs"
             UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(userName, null,  List.of()); //List.of() is the list of roles - empty = defualt role (no special permisions), ex: List.of(new SimpleGrantedAuthority("ROLE_ADMIN"))
             SecurityContextHolder.getContext().setAuthentication(auth);
-
-            //Once the request is over, Spring clears the context (using SecurityContextHolder.clearContext()) - only one Authentication object at a time, per thread (means we can access cretentials anywhere in code).
+            
+            // continue the filter chain.
+            filterChain.doFilter(request, response);
+        }else{
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Missing JWT token");
+            return;
         }
     }
 
