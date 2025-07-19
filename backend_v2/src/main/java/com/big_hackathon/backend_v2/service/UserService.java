@@ -2,10 +2,9 @@ package com.big_hackathon.backend_v2.service;
 
 import com.big_hackathon.backend_v2.DTO.UserDTO;
 import com.big_hackathon.backend_v2.model.Apartment;
-import com.big_hackathon.backend_v2.model.Hasher;
 import com.big_hackathon.backend_v2.model.User;
 import com.big_hackathon.backend_v2.repo.UserDAO;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 
@@ -13,10 +12,11 @@ import java.util.ArrayList;
 public class UserService {
 
     private final UserDAO userDAO;
+    private final PasswordEncoder passwordEncoder;
 
-    @Autowired
-    public UserService(UserDAO userDAO){
+    public UserService(UserDAO userDAO, PasswordEncoder passwordEncoder){
         this.userDAO = userDAO;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public UserDTO getUser(String email) {
@@ -30,7 +30,7 @@ public class UserService {
         userDAO.save(User
                 .builder()
                 .email(email)
-                .hashedPassword(Hasher.hashData(password))
+                .hashedPassword(passwordEncoder.encode(password))
                 .firstName(fname)
                 .lastName(lname)
                 .apartments(new ArrayList<Apartment>())

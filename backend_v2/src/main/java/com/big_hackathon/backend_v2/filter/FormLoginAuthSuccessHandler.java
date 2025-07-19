@@ -9,7 +9,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-public class CustomAuthSuccessHandler implements AuthenticationSuccessHandler{
+public class FormLoginAuthSuccessHandler implements AuthenticationSuccessHandler{
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,

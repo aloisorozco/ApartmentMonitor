@@ -13,12 +13,12 @@ import com.big_hackathon.backend_v2.service.AuthUserService;
 
 // Default Authentication provider for form login
 @Component
-public class CustomAuthProvider implements AuthenticationProvider{
+public class FormLoginAuthProvider implements AuthenticationProvider{
 
     private final PasswordEncoder passwordEncoder;
     private final AuthUserService userDetailsService;
     
-    public CustomAuthProvider(PasswordEncoder passwordEncoder,AuthUserService userService){
+    public FormLoginAuthProvider(PasswordEncoder passwordEncoder,AuthUserService userService){
         this.passwordEncoder = passwordEncoder;
         this.userDetailsService = userService;
     }
