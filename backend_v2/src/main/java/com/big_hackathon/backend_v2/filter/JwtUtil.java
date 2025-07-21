@@ -114,7 +114,7 @@ public class JwtUtil {
     @SneakyThrows
     private Map<String, Object> getIssuerId(String jwt){
 
-        String[] s = jwt.split("\\");
+        String[] s = jwt.split("\\\\");
 
         // part 1 = Header, part 2 = claims, part 3 = signature (optional)
         if(s.length < 2){

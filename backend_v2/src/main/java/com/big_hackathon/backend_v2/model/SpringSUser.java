@@ -28,6 +28,19 @@ public class SpringSUser implements UserDetails{
 
     @Override
     public String getUsername() {
+        return this.user.getEmail().toString();
+        
+    }
+
+    public String getFName() {
+        return this.user.getFirstName().toString();
+    }
+
+    public String getLName() {
+        return this.user.getLastName().toString();
+    }
+
+    public String getUserID() {
         return this.user.getUserID().toString();
     }
     

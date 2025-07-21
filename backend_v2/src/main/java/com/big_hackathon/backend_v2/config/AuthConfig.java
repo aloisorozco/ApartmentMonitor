@@ -19,7 +19,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import com.big_hackathon.backend_v2.filter.FormLoginAuthProvider;
 import com.big_hackathon.backend_v2.filter.FormLoginAuthSuccessHandler;
 import com.big_hackathon.backend_v2.filter.CustomOAuthSuccessHandler;
-import com.big_hackathon.backend_v2.filter.OAuthValidationFilter;
+import com.big_hackathon.backend_v2.filter.JwtValidationFilter;
 import com.big_hackathon.backend_v2.service.AuthUserService;
 import com.big_hackathon.backend_v2.filter.JwtUtil;
 
@@ -36,12 +36,9 @@ public class AuthConfig {
     @Autowired
     private AuthUserService userService;
 
-    @Autowired
-    private FormLoginAuthProvider formLoginProvider;
-
     @Bean
     @SneakyThrows
-    SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http, CustomOAuthSuccessHandler customSuccessHandler, FormLoginAuthSuccessHandler customAuthSuccessHandler){
+    SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http, CustomOAuthSuccessHandler customSuccessHandler, FormLoginAuthSuccessHandler customAuthSuccessHandler, AuthenticationManager providers){
         
         // Setting up CSRF + Form base login
         http.csrf(csrf -> csrf.disable())
@@ -49,13 +46,17 @@ public class AuthConfig {
             .userDetailsService(userService)
             .authorizeHttpRequests(authorizeRequests -> authorizeRequests.anyRequest().authenticated())
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+
         
+        // Setting up the custom JWT validation filter so that all API calls are validated
+        http.addFilterBefore(new JwtValidationFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class);
+        
+        // TODO: implement after Form Based loggin works, and works with JWT!
         // Setting up OAuth filters
-        http.addFilterBefore(new OAuthValidationFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class)
-            .oauth2Login(oauth -> oauth.successHandler(customSuccessHandler)); // OAuth loggin w/appropriate success handler
+        // http.oauth2Login(oauth -> oauth.successHandler(customSuccessHandler)); // OAuth loggin w/appropriate success handler
 
         // Setting up Authentication Managers
-        http.authenticationManager(providers(formLoginProvider));
+        http.authenticationManager(providers);
         return http.build();
     }
 

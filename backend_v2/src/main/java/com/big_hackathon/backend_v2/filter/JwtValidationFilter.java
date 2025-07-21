@@ -16,11 +16,11 @@ import jakarta.servlet.http.HttpServletResponse;
 
 // OncePerRequestFilter = filter guaranteed to execute only once per request
 @Component
-public class OAuthValidationFilter extends OncePerRequestFilter {
+public class JwtValidationFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
 
-    public OAuthValidationFilter(JwtUtil jwtUtil){
+    public JwtValidationFilter(JwtUtil jwtUtil){
         this.jwtUtil = jwtUtil;
     }
 
@@ -46,7 +46,7 @@ public class OAuthValidationFilter extends OncePerRequestFilter {
                 return;
             }
 
-            String userName = jwt.getClaimAsString("iss") +  "-" + jwt.getClaimAsString("sub");
+            String userName = jwt.getClaimAsString("email");
 
             // Create the user authenticaion object and added it to the spring security context (thread local)
             // this just tells spring "I manually verified this user, here is an object representing them, add it to the context, and allow them to access the APIs"

@@ -1,6 +1,4 @@
 package com.big_hackathon.backend_v2.service;
-
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
@@ -20,7 +18,7 @@ public class AuthUserService implements UserDetailsService{
 
     // TODO: ask nico to make a username field in the db -> username is just a unique key other than the ID.
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+    public SpringSUser loadUserByUsername(String username) throws UsernameNotFoundException {
         User user = userRepo.findByEmail(username).orElseThrow(() -> new UsernameNotFoundException("User with username: " + username + ", not found"));
 
         return new SpringSUser(user);
