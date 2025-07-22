@@ -9,6 +9,7 @@ import java.security.interfaces.RSAPublicKey;
 import java.time.Instant;
 import java.util.Base64;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -70,23 +71,21 @@ public class JwtUtil {
         return now.after(Date.from(token.getExpiresAt()));
     }
 
-    public Jwt decodeNativeToken(String encodedToken){
+    private Jwt decodeNativeToken(String encodedToken){
         Algorithm rsaAlgo = Algorithm.RSA256((RSAPublicKey) keyPair.getPublic(), (RSAPrivateKey) keyPair.getPrivate());
         try{
 
             // Veryfying the JWT based on it's signature, using our Private/Public key pair
             DecodedJWT jwtDecoded= JWT.require(rsaAlgo).build().verify(encodedToken);
             byte[] base64Header = Base64.getUrlDecoder().decode(jwtDecoded.getHeader());
+            byte[] base64Payload = Base64.getUrlDecoder().decode(jwtDecoded.getPayload());
 
             // Parsing the custom DecodedJWT object to a Jwt object - trying to keep one type of JWT object in our code
             // The reason we add '{}' is to create an anonymous subclass of TypeReference -> this is done to circumvent Java's Type Erasure issue, where at runtime Java sees Map<String, Object> as just a Map object, 
             // while the Jackson library NEEDS to know the actual type into which to deserialize the data -> we then need the anonymous subclass to save the type info as metadata!
             Map<String, Object> headers = new ObjectMapper().readValue(new String(base64Header, StandardCharsets.UTF_8), new TypeReference<Map<String, Object>>() {});
-            Map<String, Object> claims = jwtDecoded.getClaims().entrySet().stream()
-                .collect(Collectors.toMap(
-                    entry -> entry.getKey(),
-                    entry -> entry.getValue().toString()
-                ));
+            Map<String, Object> claims = new ObjectMapper().readValue(new String(base64Payload, StandardCharsets.UTF_8), new TypeReference<Map<String, Object>>() {});
+            
             Jwt token = new Jwt(jwtDecoded.getToken(), jwtDecoded.getIssuedAt().toInstant(), jwtDecoded.getExpiresAt().toInstant(), headers, claims);
             return isExpired(token) ? null : token;
         }catch(Exception e){
@@ -96,7 +95,7 @@ public class JwtUtil {
     }
 
     public Jwt decodeToken(String accessToken){
-        Map<String, Object> jwtParsed = getIssuerId(accessToken);
+        Map<String, String> jwtParsed = getIssuerId(accessToken);
         
         String issUrl = (String) jwtParsed.get("iss");
 
@@ -112,19 +111,18 @@ public class JwtUtil {
 
     // we are manually parsing the JWT here for the sole purposs of retrieving the iss - the actual JWT validation is done later.
     @SneakyThrows
-    private Map<String, Object> getIssuerId(String jwt){
+    private Map<String, String> getIssuerId(String jwt){
 
-        String[] s = jwt.split("\\\\");
+        String[] s = jwt.split("\\.");
 
         // part 1 = Header, part 2 = claims, part 3 = signature (optional)
         if(s.length < 2){
             throw new IllegalArgumentException("Invalid JWT: JWT missing parts.");
         }
         String payload = new String(Base64.getUrlDecoder().decode(s[1]));
-        ObjectMapper mapper = new ObjectMapper();
 
         // Reading the JSON payload into a map - the mapper object does exactly that.
-        Map<String, Object> payloadMap = mapper.readValue(payload, Map.class);
+        Map<String, String> payloadMap = new ObjectMapper().readValue(payload, HashMap.class);
         return payloadMap;
     }
 }

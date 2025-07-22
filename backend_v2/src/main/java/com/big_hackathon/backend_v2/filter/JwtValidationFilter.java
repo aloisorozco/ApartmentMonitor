@@ -6,16 +6,16 @@ import java.util.List;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import com.big_hackathon.backend_v2.model.SpringSUser;
+import com.big_hackathon.backend_v2.model.User;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 // OncePerRequestFilter = filter guaranteed to execute only once per request
-@Component
 public class JwtValidationFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
@@ -47,10 +47,20 @@ public class JwtValidationFilter extends OncePerRequestFilter {
             }
 
             String userName = jwt.getClaimAsString("email");
+            String fullName = jwt.getClaimAsString("name");
+            String[] names = fullName.split(" ");
+
+            User user = User.builder()
+                .email(userName)
+                .firstName(names[0])
+                .lastName(names[1])
+                .build();
+
+            SpringSUser userDetails = new SpringSUser(user);
 
             // Create the user authenticaion object and added it to the spring security context (thread local)
             // this just tells spring "I manually verified this user, here is an object representing them, add it to the context, and allow them to access the APIs"
-            UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(userName, null,  List.of()); //List.of() is the list of roles - empty = defualt role (no special permisions), ex: List.of(new SimpleGrantedAuthority("ROLE_ADMIN"))
+            UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(userDetails, null,  List.of()); //List.of() is the list of roles - empty = defualt role (no special permisions), ex: List.of(new SimpleGrantedAuthority("ROLE_ADMIN"))
             SecurityContextHolder.getContext().setAuthentication(auth);
             
             // continue the filter chain.
