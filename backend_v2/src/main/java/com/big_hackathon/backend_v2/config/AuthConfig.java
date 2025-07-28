@@ -1,11 +1,13 @@
 package com.big_hackathon.backend_v2.config;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -13,12 +15,17 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.crypto.password.StandardPasswordEncoder;
+import org.springframework.security.oauth2.client.authentication.OAuth2LoginAuthenticationProvider;
+import org.springframework.security.oauth2.client.endpoint.RestClientAuthorizationCodeTokenResponseClient;
+import org.springframework.security.oauth2.client.oidc.authentication.OidcAuthorizationCodeAuthenticationProvider;
+import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserService;
+import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import com.big_hackathon.backend_v2.filter.FormLoginAuthProvider;
 import com.big_hackathon.backend_v2.filter.FormLoginAuthSuccessHandler;
-import com.big_hackathon.backend_v2.filter.CustomOAuthSuccessHandler;
+import com.big_hackathon.backend_v2.filter.OAuthSuccessHandler;
 import com.big_hackathon.backend_v2.filter.JwtValidationFilter;
 import com.big_hackathon.backend_v2.service.AuthUserService;
 import com.big_hackathon.backend_v2.filter.JwtUtil;
@@ -38,7 +45,7 @@ public class AuthConfig {
 
     @Bean
     @SneakyThrows
-    SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http, CustomOAuthSuccessHandler customSuccessHandler, FormLoginAuthSuccessHandler customAuthSuccessHandler, AuthenticationManager providers){
+    SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http, OAuthSuccessHandler customSuccessHandler, FormLoginAuthSuccessHandler customAuthSuccessHandler, AuthenticationManager providers){
         
         // Setting up CSRF + Form base login
         http.csrf(csrf -> csrf.disable())
@@ -51,9 +58,8 @@ public class AuthConfig {
         // Setting up the custom JWT validation filter so that all API calls are validated
         http.addFilterBefore(new JwtValidationFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class);
         
-        // TODO: implement after Form Based loggin works, and works with JWT!
         // Setting up OAuth filters
-        // http.oauth2Login(oauth -> oauth.successHandler(customSuccessHandler)); // OAuth loggin w/appropriate success handler
+        http.oauth2Login(oauth -> oauth.successHandler(customSuccessHandler)); // OAuth loggin w/appropriate success handler
 
         // Setting up Authentication Managers
         http.authenticationManager(providers);
@@ -64,7 +70,15 @@ public class AuthConfig {
     // TODO: when done, add the CustomOauthProvider here too, so spring can manager it.
     @Bean
     AuthenticationManager providers(FormLoginAuthProvider formLoginProvider){
-        return new ProviderManager(List.of(formLoginProvider));
+        List<AuthenticationProvider> providers = new ArrayList<>();
+        providers.add(formLoginProvider);
+
+        // We are re-setting Spring's default OAuth AuthenticationProvider, which was overwritten since we added the custom AuthenticationProvider for the custom form-login
+        providers.add(new OAuth2LoginAuthenticationProvider(new RestClientAuthorizationCodeTokenResponseClient(), new DefaultOAuth2UserService()));
+
+        // ... and one for OIDC!
+        providers.add(new OidcAuthorizationCodeAuthenticationProvider(new RestClientAuthorizationCodeTokenResponseClient(), new OidcUserService()));
+        return new ProviderManager(providers);
     }
 
 
