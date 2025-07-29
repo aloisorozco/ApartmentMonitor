@@ -57,7 +57,7 @@ public class ApartmentController {
 //        return apartmentService.updateApartment(apartment, id);
 //    }
 
-    @DeleteMapping("/delete_apartment")
+    @DeleteMapping("/delete")
     public ResponseEntity<String> deleteApartment(@RequestParam Long listingId) {
         logger.info("deleteApartment endpoint called");
         try{

@@ -41,13 +41,14 @@ public class UserService {
 
     //TODO Test to see if works
     public void updateUser(String email, String password, String fname, String lname) {
-        userREPO.save(User
-                .builder()
-                .email(email)
-                .hashedPassword(Hasher.hashData(password))
-                .firstName(fname)
-                .lastName(lname)
-                .build());
+        User user = userREPO.findByEmail(email)
+                            .orElseThrow(() -> new RuntimeException("User not found"));
+        
+        user.setFirstName(fname);
+        user.setLastName(lname);
+        user.setHashedPassword(Hasher.hashData(password));
+
+        userREPO.save(user);
     }
 
     public void deleteUser(String email) {

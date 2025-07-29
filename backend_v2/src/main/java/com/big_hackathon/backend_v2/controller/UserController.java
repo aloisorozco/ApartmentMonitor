@@ -21,12 +21,6 @@ public class UserController {
         System.out.println("TEST ENDPOINT HIT!");
     }
 
-    @GetMapping("/test")
-    public ResponseEntity<?> testUser() {
-        
-        return ResponseEntity.ok("Test");
-    }
-
     @GetMapping("/get")
     public ResponseEntity<?> getUser(@RequestParam String email) {
         logger.info("getUser endpoint called");
@@ -38,7 +32,7 @@ public class UserController {
         }
     }
 
-    @PostMapping("/register_user")
+    @PostMapping("/register")
     public ResponseEntity<String> insertUser(@RequestBody Map<String, String> json) {
         logger.info("Register user endpoint called");
 
@@ -56,6 +50,24 @@ public class UserController {
         }
     }
 
+    @PostMapping("/update")
+    public ResponseEntity<String> updateUser(@RequestBody Map<String, String> json) {
+        logger.info("Update user endpoint called");
+
+        String email = json.get("email");
+        String password = json.get("password");
+        String fname = json.get("fname");
+        String lname = json.get("lname");
+
+        try {
+            userService.updateUser(email, password, fname, lname);
+            return new ResponseEntity<>("Update successful", HttpStatus.CREATED);
+        } catch (Exception e) {
+            logger.error("Error updating user: {}", e.getMessage());
+            return new ResponseEntity<>("Update failed", HttpStatus.BAD_REQUEST);
+        }
+    }
+
     // @PutMapping("/{id}")
     // public String updateUser(@PathVariable Long id) {
     //     logger.info("updateUser endpoint called");
@@ -64,7 +76,7 @@ public class UserController {
 
     //TODO add user and admin roles. And map delete to @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/delete")
-    public ResponseEntity<String> deleteUser(@RequestBody String email) {
+    public ResponseEntity<String> deleteUser(@RequestParam String email) {
         logger.info("deleteUser endpoint called");
         try{
             userService.deleteUser(email);
