@@ -42,7 +42,7 @@ public class User {
 
     //M2M unidirectional
     @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @JoinTable(name = "user_apartment_watchlist",
+    @JoinTable(name = "user_watchlist",
             joinColumns = @JoinColumn(name = "user_id", referencedColumnName = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "listing_id", referencedColumnName = "listing_id"))
     private List<Apartment> apartments = new ArrayList<>();

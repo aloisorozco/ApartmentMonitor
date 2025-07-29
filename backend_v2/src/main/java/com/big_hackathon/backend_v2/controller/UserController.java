@@ -1,5 +1,6 @@
 package com.big_hackathon.backend_v2.controller;
 
+import com.big_hackathon.backend_v2.DTO.UserDTO;
 import com.big_hackathon.backend_v2.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,10 +18,17 @@ public class UserController {
 
     public UserController(UserService userService) {
         this.userService = userService;
+        System.out.println("TEST ENDPOINT HIT!");
     }
 
-    @GetMapping("/get/{id}")
-    public ResponseEntity<?> getUser(@PathVariable String email) {
+    @GetMapping("/test")
+    public ResponseEntity<?> testUser() {
+        
+        return ResponseEntity.ok("Test");
+    }
+
+    @GetMapping("/get")
+    public ResponseEntity<?> getUser(@RequestParam String email) {
         logger.info("getUser endpoint called");
         try{
             return ResponseEntity.status(HttpStatus.OK).body(userService.getUser(email));
@@ -73,6 +81,12 @@ public class UserController {
         return new ResponseEntity<>("Delete user successful", HttpStatus.OK);
 
         //TODO will be changed with OAuth and JWT
+    }
+
+    @GetMapping("/fetch_watchlist")
+    public ResponseEntity<?> getUserWatchlist(@RequestParam  String email) {
+        logger.info("getUserWatchlist endpoint called");
+        return ResponseEntity.status(HttpStatus.OK).body(userService.getWatchlist(email));
     }
 
 }

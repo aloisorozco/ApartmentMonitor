@@ -6,13 +6,13 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 import com.big_hackathon.backend_v2.model.SpringSUser;
 import com.big_hackathon.backend_v2.model.User;
-import com.big_hackathon.backend_v2.repo.UserDAO;
+import com.big_hackathon.backend_v2.repo.UserRepo;
 
 public class AuthUserService implements UserDetailsService{
 
-    private final UserDAO userRepo;
+    private final UserRepo userRepo;
 
-    public AuthUserService(UserDAO userRepo){
+    public AuthUserService(UserRepo userRepo){
         this.userRepo = userRepo;
     }
 
