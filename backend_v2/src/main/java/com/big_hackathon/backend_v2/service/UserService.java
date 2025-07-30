@@ -26,8 +26,8 @@ public class UserService {
                 .orElseThrow(() -> new RuntimeException("User not found"));
     }
 
-    public void saveUser(String email, String password, String fname, String lname) {
-        userDAO.save(User
+    public User saveUser(String email, String password, String fname, String lname) {
+        User u = userDAO.save(User
                 .builder()
                 .email(email)
                 .hashedPassword(passwordEncoder.encode(password))
@@ -35,6 +35,8 @@ public class UserService {
                 .lastName(lname)
                 .apartments(new ArrayList<Apartment>())
                 .build());
+
+        return u;
     }
 
     // public String updateUser(Long id) {

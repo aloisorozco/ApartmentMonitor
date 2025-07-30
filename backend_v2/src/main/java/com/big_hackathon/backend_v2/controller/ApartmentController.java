@@ -21,7 +21,7 @@ public class ApartmentController {
     }
 
     @GetMapping("/fetch_watchlist")
-    public ResponseEntity<?> getUserWatchlist(@RequestParam  String email) {
+    public ResponseEntity<?> getUserWatchlist(@RequestParam String email) {
         logger.info("getUserWatchlist endpoint called");
         return ResponseEntity.status(HttpStatus.OK).body(apartmentService.getWatchlist(email));
     }
