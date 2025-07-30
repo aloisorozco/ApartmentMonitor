@@ -73,9 +73,6 @@ public class AuthConfig {
         List<AuthenticationProvider> providers = new ArrayList<>();
         providers.add(formLoginProvider);
 
-        // We are re-setting Spring's default OAuth AuthenticationProvider, which was overwritten since we added the custom AuthenticationProvider for the custom form-login
-        providers.add(new OAuth2LoginAuthenticationProvider(new RestClientAuthorizationCodeTokenResponseClient(), new DefaultOAuth2UserService()));
-
         // ... and one for OIDC!
         providers.add(new OidcAuthorizationCodeAuthenticationProvider(new RestClientAuthorizationCodeTokenResponseClient(), new OidcUserService()));
         return new ProviderManager(providers);
