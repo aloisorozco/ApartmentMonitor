@@ -28,7 +28,7 @@ public class JwtValidationFilter extends OncePerRequestFilter {
     protected boolean shouldNotFilter(HttpServletRequest request){
         String path = request.getRequestURI();
         
-        if (path.equals("/") || path.startsWith("/oauth2") || path.equals("/login") || path.equals("/api/users/register_user")) {
+        if (path.equals("/") || path.startsWith("/oauth2") || path.equals("/login") || path.equals("/auth/register_user")) {
             return true; // true = do not filter request to check if it has JWT on loggin
         }
 

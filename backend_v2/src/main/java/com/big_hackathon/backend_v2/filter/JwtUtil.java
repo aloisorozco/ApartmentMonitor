@@ -65,6 +65,10 @@ public class JwtUtil {
         return tokenBuilder.sign(Algorithm.RSA256((RSAPublicKey) keyPair.getPublic(), (RSAPrivateKey) keyPair.getPrivate()));
     }
 
+    public String generateRefreshToken(){
+        return UUID.randomUUID().toString();
+    }
+
     public boolean isExpired(Jwt token){
         Date now = Date.from(Instant.now());
         return now.after(Date.from(token.getExpiresAt()));

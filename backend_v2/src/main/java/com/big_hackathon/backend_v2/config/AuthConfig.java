@@ -53,7 +53,7 @@ public class AuthConfig {
             .formLogin(login -> login.loginPage("/login").successHandler(customAuthSuccessHandler)) // Default loggin w/appropriate success handler
             .userDetailsService(userService)
             .authorizeHttpRequests(authorizeRequests -> {
-                authorizeRequests.requestMatchers("/api/users/register_user").permitAll();
+                authorizeRequests.requestMatchers("/auth/register_user").permitAll();
                 authorizeRequests.anyRequest().authenticated();
 
             }).sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
