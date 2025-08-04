@@ -40,8 +40,12 @@ public class SpringSUser implements UserDetails{
         return this.user.getLastName().toString();
     }
 
-    public String getUserID() {
-        return this.user.getUserID().toString();
+    public Long getUserID() {
+        return this.user.getUserID();
+    }
+
+    public User getUser() {
+        return this.user;
     }
     
 }

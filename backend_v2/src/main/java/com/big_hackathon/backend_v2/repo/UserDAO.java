@@ -11,4 +11,5 @@ import com.big_hackathon.backend_v2.model.User;
 @Repository
 public interface UserDAO extends JpaRepository<User, Long> {
     Optional<User> findByEmail(String email);
+    boolean existsByEmail(String email);
 }

@@ -19,6 +19,10 @@ public class UserService {
         this.passwordEncoder = passwordEncoder;
     }
 
+    public boolean exists(String email) {
+        return userDAO.existsByEmail(email);
+    }
+
     public UserDTO getUser(String email) {
 
         return userDAO.findByEmail(email)

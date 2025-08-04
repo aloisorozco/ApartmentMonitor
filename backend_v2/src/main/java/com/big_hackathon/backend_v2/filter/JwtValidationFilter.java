@@ -28,7 +28,7 @@ public class JwtValidationFilter extends OncePerRequestFilter {
     protected boolean shouldNotFilter(HttpServletRequest request){
         String path = request.getRequestURI();
         
-        if (path.equals("/") || path.startsWith("/oauth2") || path.equals("/login") || path.equals("/auth/register_user")) {
+        if (path.equals("/") || path.startsWith("/oauth2") || path.equals("/login") || path.contains("/auth/")) {
             return true; // true = do not filter request to check if it has JWT on loggin
         }
 
@@ -37,7 +37,7 @@ public class JwtValidationFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        String token = extractJwtBearer(request);
+        String token = jwtUtil.extractJwtBearer(request);
         
         if(token != null){
             Jwt jwt = jwtUtil.decodeToken(token);
@@ -69,13 +69,5 @@ public class JwtValidationFilter extends OncePerRequestFilter {
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Missing JWT token");
             return;
         }
-    }
-
-    private String extractJwtBearer(HttpServletRequest request){
-        String bearerToken = request.getHeader("Authorization");
-        if(bearerToken != null && bearerToken.startsWith("Bearer")){
-            return bearerToken.substring(7);
-        }
-        return null;
     }
 }

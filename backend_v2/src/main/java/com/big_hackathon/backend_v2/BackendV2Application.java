@@ -3,7 +3,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ConfigurableApplicationContext;
 
-import com.big_hackathon.backend_v2.service.UserService;
+// import com.big_hackathon.backend_v2.service.UserService;
 
 @SpringBootApplication
 public class BackendV2Application {

@@ -17,10 +17,12 @@ public class RefreshTokenDTO {
     private long user_id;
     private String tokenValue;
     private final LocalDateTime expiresAt;
+    private boolean isActive;
 
     public RefreshTokenDTO(RefreshToken token){
         this.user_id = token.getUserID();
         this.tokenValue = token.getTokenValue();
         this.expiresAt = token.getExpiresAt();
+        this.isActive = token.isActive();
     }
 }

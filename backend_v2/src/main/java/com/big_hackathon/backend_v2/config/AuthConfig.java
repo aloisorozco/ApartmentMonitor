@@ -14,8 +14,8 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.crypto.password.StandardPasswordEncoder;
 import org.springframework.security.oauth2.client.endpoint.RestClientAuthorizationCodeTokenResponseClient;
 import org.springframework.security.oauth2.client.oidc.authentication.OidcAuthorizationCodeAuthenticationProvider;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserService;
@@ -38,22 +38,22 @@ import lombok.SneakyThrows;
 @EnableMethodSecurity
 public class AuthConfig {
 
-    @Autowired
-    private JwtUtil jwtUtil; 
-
-    @Autowired
-    private AuthUserService userService;
-
     @Bean
     @SneakyThrows
-    SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http, OAuthSuccessHandler customSuccessHandler, FormLoginAuthSuccessHandler customAuthSuccessHandler, AuthenticationManager providers){
+    SecurityFilterChain defaultSecurityFilterChain(
+        HttpSecurity http, 
+        OAuthSuccessHandler customSuccessHandler, 
+        FormLoginAuthSuccessHandler customAuthSuccessHandler, 
+        AuthenticationManager providers,
+        JwtUtil jwtUtil, 
+        AuthUserService userService){
         
         // Setting up CSRF + Form base login
         http.csrf(csrf -> csrf.disable())
             .formLogin(login -> login.loginPage("/login").successHandler(customAuthSuccessHandler)) // Default loggin w/appropriate success handler
             .userDetailsService(userService)
             .authorizeHttpRequests(authorizeRequests -> {
-                authorizeRequests.requestMatchers("/auth/register_user").permitAll();
+                authorizeRequests.requestMatchers("/auth/**").permitAll();
                 authorizeRequests.anyRequest().authenticated();
 
             }).sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
@@ -95,7 +95,7 @@ public class AuthConfig {
     // TODO: Changed to a stronger password encoder down the line - SHA-256 is deprecated, using it rn just for testing.
     @Bean
     PasswordEncoder loginPasswordEncoder(){
-        return new StandardPasswordEncoder();
+        return new BCryptPasswordEncoder();
     }
     
 }
