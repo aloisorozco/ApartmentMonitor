@@ -15,14 +15,10 @@ import java.time.LocalDateTime;
 public class RefreshToken {
 
     @Id
-    @Column(name = "user_id")
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "user_seq_generator")
-    @SequenceGenerator(name = "user_seq_generator", allocationSize = 5, initialValue = 1000)
     private Long userID;
-
+    
     @OneToOne
-    @MapsId // tells JPA: "use the same ID as the user"
-    @JoinColumn(name = "userID")
+    @MapsId
     private User user;
 
     @Column(name = "refreshToken")

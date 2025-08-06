@@ -17,7 +17,6 @@ import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseCookie;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtDecoders;
@@ -28,6 +27,7 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 import com.big_hackathon.backend_v2.controller.ApartmentController;
 import com.auth0.jwt.JWTCreator.Builder;
 import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -37,17 +37,17 @@ import lombok.SneakyThrows;
 @Component
 public class JwtUtil {
 
-    private final PasswordEncoder encoder;
-
     Logger logger = LoggerFactory.getLogger(ApartmentController.class);
 
     private KeyPairGenerator keyPairGenerator;
+    private final int DEFAULT_JWT_TTL_SECONDS = 300;
+    private final int REFRESH_TOKEN_TTL_DAYS = 3;
 
     // Public/Private Key pair
     private KeyPair keyPair;
     private final String ISS = "https://apartmentmonitor.com";
 
-    public JwtUtil(PasswordEncoder encoder) throws NoSuchAlgorithmException{
+    public JwtUtil() throws NoSuchAlgorithmException{
 
         // KeyPairGenerator to make RSA encrypted keys
         this.keyPairGenerator = KeyPairGenerator.getInstance("RSA");
@@ -55,8 +55,6 @@ public class JwtUtil {
         // set up generator to create keys that are 2048 bits in length - 2048 is a good balance between security and generation speed (can make 4096 for extra security)
         this.keyPairGenerator.initialize(2048);
         this.keyPair = this.keyPairGenerator.generateKeyPair();
-        
-        this.encoder = encoder;
     }
 
     public String generateJWT(String sub, String email, String name){
@@ -65,51 +63,34 @@ public class JwtUtil {
             "email", email,
             "name", name
         );
-        return generateJWT(payload);
+        return generateJWT(payload, DEFAULT_JWT_TTL_SECONDS);
     }
 
-    public String generateJWT(Map<String, String> payload){
+    private String generateJWT(Map<String, String> payload, int ttl){
         Builder tokenBuilder = JWT.create()
             .withIssuer(ISS)
             .withClaim("jti", UUID.randomUUID().toString())
-            .withExpiresAt(Date.from(Instant.now().plusSeconds(10))) // 5 minute TTL -> can reduce in case need a shortlived token
+            .withExpiresAt(Date.from(Instant.now().plusSeconds(ttl))) // 5 minute TTL -> can reduce in case need a shortlived token
             .withIssuedAt(Date.from(Instant.now()));
 
         payload.entrySet().forEach(claim -> tokenBuilder.withClaim(claim.getKey(), claim.getValue()));
 
         return tokenBuilder.sign(Algorithm.RSA256((RSAPublicKey) keyPair.getPublic(), (RSAPrivateKey) keyPair.getPrivate()));
     }
-
-    public String generateRefreshedJWT(String jwtToken){
-        Jwt expiredToken = decodeNativeToken(jwtToken);
-
-        Map<String, String> copiedClaims = Map.of(
-            "sub", expiredToken.getClaim("sub"),
-            "email", expiredToken.getClaim("email"),
-            "name", expiredToken.getClaim("name")
-        );
-
-        return generateJWT(copiedClaims);
-    }
-
+    
     public ResponseCookie generateRefreshTokenAsCookie(){
 
         // we set the refresh token as a cookie to prevent XSS attacks - it is risky for us to send the refresh token in plain text, and save in user session!
         // if someone gets hold of the refresh token and user email, they pretty much can request a new JWT, which mean nico gets fired from the company for slacking!
-        ResponseCookie refreshCookie  = ResponseCookie.from("refreshToken", encoder.encode(UUID.randomUUID().toString()))
+        ResponseCookie refreshCookie  = ResponseCookie.from("refreshToken", UUID.randomUUID().toString())
             .httpOnly(true) // assures that the cookie is accesed only by HTTP - cannot do smt like document.getCookie in JS!
             .secure(false) // TODO: when we have HTTPS setup, switch back to 'true' to ensure that cookie only send over HTTPS
             .sameSite("None") // TODO: also change to "Strict" later on, to prevent cookie being sent in CSRF situations.
-            .path("/auth/refresh_jwt") // VERY IMPORTANT! this tells the browser "attach the refresh token when requesting to this endpoint"
-            .maxAge(Duration.ofDays(3))
+            .path("/auth") // VERY IMPORTANT! this tells the browser "attach the refresh token when requesting to this endpoint"
+            .maxAge(Duration.ofDays(REFRESH_TOKEN_TTL_DAYS))
             .build();
 
         return refreshCookie;
-    }
-
-    public boolean isExpired(Jwt token){
-        Date now = Date.from(Instant.now());
-        return now.after(Date.from(token.getExpiresAt()));
     }
 
     private Jwt decodeNativeToken(String encodedToken){
@@ -128,11 +109,14 @@ public class JwtUtil {
             Map<String, Object> claims = new ObjectMapper().readValue(new String(base64Payload, StandardCharsets.UTF_8), new TypeReference<Map<String, Object>>() {});
             
             Jwt token = new Jwt(jwtDecoded.getToken(), jwtDecoded.getIssuedAt().toInstant(), jwtDecoded.getExpiresAt().toInstant(), headers, claims);
-            return isExpired(token) ? null : token;
-        }catch(Exception e){
+            return token;
+        }catch(JWTVerificationException e){
             logger.info("Passed JWT token is invalid: " +  e.getMessage());
-            return null;
+        }catch(Exception e){
+            logger.info("Issue parsin the JWT " +  e.getMessage());
         }
+        
+        return null;
     }
 
     public Jwt decodeToken(String accessToken){

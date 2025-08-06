@@ -39,6 +39,11 @@ public class OAuthSuccessHandler implements AuthenticationSuccessHandler{
             OidcUser user = (OidcUser) principal;
             String jwtString = user.getIdToken().getTokenValue();
             Jwt jwt = jwtUtil.decodeToken(jwtString);
+
+            if(jwt == null){
+                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid token");
+                return;
+            }
             
             String fName = jwt.getClaimAsString("given_name");
             String lName = jwt.getClaimAsString("family_name");
