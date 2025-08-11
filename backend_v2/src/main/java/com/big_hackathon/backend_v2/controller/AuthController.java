@@ -15,10 +15,12 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.big_hackathon.backend_v2.DTO.UserDTO;
+import com.big_hackathon.backend_v2.controller.refreshers.TokenRefreshersFactory;
 import com.big_hackathon.backend_v2.filter.JwtUtil;
 import com.big_hackathon.backend_v2.model.Apartment;
 import com.big_hackathon.backend_v2.model.RefreshToken;
@@ -26,25 +28,26 @@ import com.big_hackathon.backend_v2.model.User;
 import com.big_hackathon.backend_v2.service.AuthUserService;
 import com.big_hackathon.backend_v2.service.UserService;
 
-import jakarta.servlet.http.HttpServletRequest;
-
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
 
     private final JwtUtil jwtUtil;
+    private final TokenRefreshersFactory refresherFactory;
 
     private final UserService userService;
     private final AuthUserService authService;
     private final PasswordEncoder encoder;
+    
 
     Logger logger = LoggerFactory.getLogger(ApartmentController.class);
 
-    public AuthController(UserService userService, JwtUtil jwtUtil, AuthUserService authService, PasswordEncoder encoder) {
+    public AuthController(UserService userService, JwtUtil jwtUtil, AuthUserService authService, PasswordEncoder encoder, TokenRefreshersFactory refresherFactory) {
         this.userService = userService;
         this.jwtUtil = jwtUtil;
         this.authService = authService;
         this.encoder = encoder;
+        this.refresherFactory = refresherFactory;
     }
 
     @PostMapping("/register_user")
@@ -93,43 +96,11 @@ public class AuthController {
     }
 
     @PostMapping("/refresh_jwt")
-    public ResponseEntity<String> refreshJWT(@CookieValue("refreshToken") String refreshToken, HttpServletRequest request) {
-
-        RefreshToken fetchedToken = null;
-        try{
-            fetchedToken = authService.fetchRefreshTokenToken(refreshToken);
-            
-        }catch(BadCredentialsException e){
-            logger.error(e.getMessage(), e);
-            return new ResponseEntity<>("Refresh Token does not exist", HttpStatus.UNAUTHORIZED);
-        }
+    public ResponseEntity<String> refreshJWT(@CookieValue("refreshToken") String refreshToken, @RequestHeader("Authorization") String authHeader) {
         
-        if(fetchedToken == null || fetchedToken.getExpiresAt().isBefore(LocalDateTime.now())){
-
-            // TODO: redirect user to login on the frontend side.
-            return new ResponseEntity<>("Refresh Token Expired - re-login", HttpStatus.UNAUTHORIZED);
-            
-        }else if(!fetchedToken.isActive()){
-            return new ResponseEntity<>("Refresh Token deactivated - login or contact an admin", HttpStatus.UNAUTHORIZED);
-        }
-
-        HttpHeaders headers = new HttpHeaders();
-        User tokenOwner = fetchedToken.getUser();
-
-        // Check if token expires soon (soon = in 1 day), if so, include the new refresh token in the response too.
-        if(fetchedToken.getExpiresAt().isBefore(LocalDateTime.now().plusDays(1))){
-            ResponseCookie newRefreshToken = jwtUtil.generateRefreshTokenAsCookie();
-
-            // Save the new refresh token that is about to expire
-            authService.saveRefreshToken(tokenOwner, newRefreshToken.getValue());
-            headers.add(HttpHeaders.SET_COOKIE, newRefreshToken.toString());
-        }
-        
-        // generating the new JWT (refreshed), based on the token bearer's info
-        String refreshedJWT = jwtUtil.generateJWT(tokenOwner.getUserID().toString(), tokenOwner.getEmail(), tokenOwner.getFirstName() + " " + tokenOwner.getLastName());
-        headers.add("Authorization", "Bearer " + refreshedJWT);
-
-        return ResponseEntity.status(HttpStatus.OK).headers(headers).build();
+        String jwt = jwtUtil.extractJwtBearer(authHeader);
+        String tokenIss = jwtUtil.getIssuerId(jwt);
+        return refresherFactory.getTokenRefresher(tokenIss).refreshJWT(refreshToken);
     }
 
     @RequestMapping("/logout")

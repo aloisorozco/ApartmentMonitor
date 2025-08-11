@@ -3,7 +3,12 @@ package com.big_hackathon.backend_v2.filter;
 import java.io.IOException;
 import java.util.UUID;
 
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
@@ -23,11 +28,14 @@ public class OAuthSuccessHandler implements AuthenticationSuccessHandler{
     private final JwtUtil jwtUtil;
     private final UserDAO userDAO;
     private final UserService userService;
+    private final OAuth2AuthorizedClientService authorizedClientService;
 
-    OAuthSuccessHandler(JwtUtil jwtUtil, UserDAO userDAO, UserService userService){
+
+    OAuthSuccessHandler(JwtUtil jwtUtil, UserDAO userDAO, UserService userService, OAuth2AuthorizedClientService authorizedClientService){
         this.jwtUtil = jwtUtil;
         this.userDAO = userDAO;
         this.userService = userService;
+        this.authorizedClientService = authorizedClientService;
     }
 
     @Override
@@ -57,7 +65,18 @@ public class OAuthSuccessHandler implements AuthenticationSuccessHandler{
                 // TODO: Yeah I know UUID is sketchy to put as a password, so we will need to find a way to flag users registered through OAuth, as to allow only OAuth registrations for them.
                 userService.saveUser(email, UUID.randomUUID().toString(), fName, lName);
             }
-            
+
+            OAuth2AuthenticationToken oauthToken = (OAuth2AuthenticationToken) authentication;
+
+            OAuth2AuthorizedClient client = authorizedClientService.loadAuthorizedClient(
+                    oauthToken.getAuthorizedClientRegistrationId(),
+                    oauthToken.getName()
+            );
+
+            String refreshTokenValue = client.getRefreshToken() != null ? client.getRefreshToken().getTokenValue() : null;
+            ResponseCookie refreshTokenCookie = jwtUtil.generateRefreshTokenAsCookie(refreshTokenValue);
+            response.addHeader(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString());  
+
             // returning the JWT back to the user.
             response.setContentType("application/json");
             response.setCharacterEncoding("UTF-8");

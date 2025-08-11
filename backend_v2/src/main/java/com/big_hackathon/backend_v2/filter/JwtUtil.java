@@ -10,13 +10,13 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Base64;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseCookie;
+import org.springframework.http.ResponseCookie.ResponseCookieBuilder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtDecoders;
@@ -82,15 +82,25 @@ public class JwtUtil {
 
         // we set the refresh token as a cookie to prevent XSS attacks - it is risky for us to send the refresh token in plain text, and save in user session!
         // if someone gets hold of the refresh token and user email, they pretty much can request a new JWT, which mean nico gets fired from the company for slacking!
-        ResponseCookie refreshCookie  = ResponseCookie.from("refreshToken", UUID.randomUUID().toString())
-            .httpOnly(true) // assures that the cookie is accesed only by HTTP - cannot do smt like document.getCookie in JS!
+        ResponseCookieBuilder refreshCookie  = ResponseCookie.from("refreshToken", UUID.randomUUID().toString());
+        return refreshTokenConfigs(refreshCookie);
+    }
+
+    public ResponseCookie generateRefreshTokenAsCookie(String tokenValue){
+
+        ResponseCookieBuilder refreshCookie  = ResponseCookie.from("refreshToken", tokenValue);
+        return refreshTokenConfigs(refreshCookie);
+    }
+    
+    private ResponseCookie refreshTokenConfigs(ResponseCookieBuilder cookieBuilder){
+
+        cookieBuilder.httpOnly(true) // assures that the cookie is accesed only by HTTP - cannot do smt like document.getCookie in JS!
             .secure(false) // TODO: when we have HTTPS setup, switch back to 'true' to ensure that cookie only send over HTTPS
             .sameSite("None") // TODO: also change to "Strict" later on, to prevent cookie being sent in CSRF situations.
             .path("/auth") // VERY IMPORTANT! this tells the browser "attach the refresh token when requesting to this endpoint"
-            .maxAge(Duration.ofDays(REFRESH_TOKEN_TTL_DAYS))
-            .build();
+            .maxAge(Duration.ofDays(REFRESH_TOKEN_TTL_DAYS));
 
-        return refreshCookie;
+        return cookieBuilder.build();
     }
 
     private Jwt decodeNativeToken(String encodedToken){
@@ -119,10 +129,8 @@ public class JwtUtil {
         return null;
     }
 
-    public Jwt decodeToken(String accessToken){
-        Map<String, String> jwtParsed = getIssuerId(accessToken);
-        
-        String issUrl = (String) jwtParsed.get("iss");
+    public Jwt decodeToken(String accessToken){        
+        String issUrl = getIssuerId(accessToken);
 
         // Redirect to our custom Auth chain -> idealy we should have our own Auth server endpoint (ask Daniel if you are brave enough)
         if(issUrl.equals(ISS)){
@@ -136,7 +144,7 @@ public class JwtUtil {
 
     // we are manually parsing the JWT here for the sole purposs of retrieving the iss - the actual JWT validation is done later.
     @SneakyThrows
-    private Map<String, String> getIssuerId(String jwt){
+    public String getIssuerId(String jwt){
 
         String[] s = jwt.split("\\.");
 
@@ -147,14 +155,18 @@ public class JwtUtil {
         String payload = new String(Base64.getUrlDecoder().decode(s[1]));
 
         // Reading the JSON payload into a map - the mapper object does exactly that.
-        Map<String, String> payloadMap = new ObjectMapper().readValue(payload, HashMap.class);
-        return payloadMap;
+        Map<String, Object> payloadMap = new ObjectMapper().readValue(payload, new TypeReference<Map<String, Object>>() {});
+        return payloadMap.get("iss").toString();
     }
 
     public String extractJwtBearer(HttpServletRequest request){
         String bearerToken = request.getHeader("Authorization");
-        if(bearerToken != null && bearerToken.startsWith("Bearer")){
-            return bearerToken.substring(7);
+        return extractJwtBearer(bearerToken);
+    }
+
+    public String extractJwtBearer(String authHeader){
+        if(authHeader != null && authHeader.startsWith("Bearer")){
+            return authHeader.substring(7);
         }
         return null;
     }
