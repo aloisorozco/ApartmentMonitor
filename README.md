@@ -4,11 +4,13 @@ React App we are developing for a friend to help him land an appartment.
 The website allows users to login and apparment listing URLs they wish to monitor, and notifies users when a listing becomes avaialble or listing price fluctuates.
 
 ## Tech Stack 🧰
-- Python (Backend)
+- Python (Backend) #Deprecated
+- Java Spring Boot (Backend)
 - JS (Frontend)
-- Flask
+- Flask #Deprecated
+- MySQL
 - React
-- Firestore (NoSQL)
+- Firestore (NoSQL) #Deprecated
 
 ## Databse
 We are using a NoSQL firestore databse to store all the information about the user's and listings.
