@@ -10,6 +10,7 @@ import com.big_hackathon.backend_v2.model.SpringSUser;
 import com.big_hackathon.backend_v2.model.User;
 import com.big_hackathon.backend_v2.repo.RefreshTokenDAO;
 import com.big_hackathon.backend_v2.repo.UserDAO;
+import com.big_hackathon.backend_v2.repo.UserRepo;
 
 @Service
 public class AuthUserService implements UserDetailsService{

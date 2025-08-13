@@ -20,11 +20,12 @@ public class ApartmentController {
         this.apartmentService = apartmentService;
     }
 
-    @GetMapping("/fetch_watchlist")
-    public ResponseEntity<?> getUserWatchlist(@RequestParam String email) {
-        logger.info("getUserWatchlist endpoint called");
-        return ResponseEntity.status(HttpStatus.OK).body(apartmentService.getWatchlist(email));
-    }
+    // //MOVED TO USER
+    // @GetMapping("/fetch_watchlist")
+    // public ResponseEntity<?> getUserWatchlist(@RequestParam  String email) {
+    //     logger.info("getUserWatchlist endpoint called");
+    //     return ResponseEntity.status(HttpStatus.OK).body(apartmentService.getWatchlist(email));
+    // }
 
 //    @GetMapping("/{id}")
 //    public String getApartment(@PathVariable Long id) {
@@ -36,7 +37,9 @@ public class ApartmentController {
     public ResponseEntity<?> insertApartment(@RequestBody Map<String, String> json) {
         logger.info("insertApartment endpoint called");
         try{
-            return ResponseEntity.status(HttpStatus.OK).body(apartmentService.insertApartment(json.get("email"), json.get("url")));
+            
+            apartmentService.insertApartment(Double.valueOf(json.get("price")), json.get("location"), json.get("description"), json.get("image_link"), json.get("url"));
+            return new ResponseEntity<>("Apartment inserted successfully", HttpStatus.OK);
         } catch (Exception e) {
             logger.error("Error inserting apartment: {}", e.getMessage());
             return new ResponseEntity<>("Adding apartment failed", HttpStatus.BAD_REQUEST);
@@ -50,11 +53,11 @@ public class ApartmentController {
 //        return apartmentService.updateApartment(apartment, id);
 //    }
 
-    @DeleteMapping("/delete_apartment")
-    public ResponseEntity<String> deleteApartment(@RequestBody Map<String, String> json) {
+    @DeleteMapping("/delete")
+    public ResponseEntity<String> deleteApartment(@RequestParam Long listingId) {
         logger.info("deleteApartment endpoint called");
         try{
-            apartmentService.deleteApartment(json.get("email"), Long.valueOf(json.get("listingId")));
+            apartmentService.deleteApartment(listingId);
             return new ResponseEntity<>("Deleting apartment successful", HttpStatus.OK);
         } catch (Exception e) {
             logger.error("Error deleting apartment: {}", e.getMessage());

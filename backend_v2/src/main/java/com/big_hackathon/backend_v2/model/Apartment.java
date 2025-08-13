@@ -5,10 +5,12 @@ import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
-@Table(name = "apartment")
+@Table(name = "apartments")
 @Getter
 @Setter
 @NoArgsConstructor
+@Builder
+@AllArgsConstructor
 public class Apartment {
 
     //TODO: unique ID should be GeoCache ID
@@ -33,14 +35,14 @@ public class Apartment {
     @Column(name = "url", nullable = false, unique = true)
     private String url;
 
-    //args constructor without the P.K since seq generated
-    public Apartment(double price, String location, String description, String imageLink, String url){
-        this.price = price;
-        this.location = location;
-        this.description = description;
-        this.imageLink = imageLink;
-        this.url = url;
-    }
+    // //args constructor without the P.K since seq generated
+    // public Apartment(double price, String location, String description, String imageLink, String url){
+    //     this.price = price;
+    //     this.location = location;
+    //     this.description = description;
+    //     this.imageLink = imageLink;
+    //     this.url = url;
+    // }
 
     public ApartmentDTO useDTO() {
         return new ApartmentDTO(this);

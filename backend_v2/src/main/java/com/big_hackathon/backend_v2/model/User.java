@@ -18,9 +18,8 @@ public class User {
 
     @Id
     @Column(name = "user_id")
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "user_seq_generator")
-    @SequenceGenerator(name = "user_seq_generator", allocationSize = 5, initialValue = 1000)
-    private Long userID;
+    
+    private String userID;
 
     @Column(name = "first_name")
     private String firstName;
@@ -38,15 +37,24 @@ public class User {
     private String hashedPassword;
 
     @Column(name = "created_at")
-    private LocalDateTime addedAt = LocalDateTime.now();
+    private LocalDateTime addedAt;
+
+    @PrePersist
+    public void generateUser(){
+        if (this.userID==null){
+            this.userID=Hasher.hashData(this.email);
+        }
+        this.addedAt = LocalDateTime.now();
+    }
 
     //M2M unidirectional
     @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @JoinTable(name = "user_apartment_watchlist",
+    @JoinTable(name = "user_watchlist",
             joinColumns = @JoinColumn(name = "user_id", referencedColumnName = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "listing_id", referencedColumnName = "listing_id"))
     private List<Apartment> apartments = new ArrayList<>();
 
+    
     public UserDTO useDTO(){
         return new UserDTO(this);
     }
