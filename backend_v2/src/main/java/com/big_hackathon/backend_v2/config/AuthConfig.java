@@ -80,7 +80,6 @@ public class AuthConfig {
     }
 
     // Creating the AuthenticationManager bean that will manage multiple AuthenticationProviders
-    // TODO: when done, add the CustomOauthProvider here too, so spring can manager it.
     @Bean
     AuthenticationManager providers(FormLoginAuthProvider formLoginProvider){
         List<AuthenticationProvider> providers = new ArrayList<>();
@@ -91,8 +90,6 @@ public class AuthConfig {
         return new ProviderManager(providers);
     }
 
-
-    // TODO: Changed to a stronger password encoder down the line - SHA-256 is deprecated, using it rn just for testing.
     @Bean
     PasswordEncoder loginPasswordEncoder(){
         return new BCryptPasswordEncoder();
