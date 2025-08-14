@@ -15,10 +15,11 @@ import java.time.LocalDateTime;
 public class RefreshToken {
 
     @Id
-    private Long userID;
+    private String userEmail;
     
     @OneToOne
     @MapsId
+    @JoinColumn(name = "email")
     private User user;
 
     @Column(name = "refreshToken")

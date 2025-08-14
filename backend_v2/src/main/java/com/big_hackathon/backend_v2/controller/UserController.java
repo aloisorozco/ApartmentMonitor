@@ -1,7 +1,6 @@
 package com.big_hackathon.backend_v2.controller;
 
 import com.big_hackathon.backend_v2.filter.JwtUtil;
-import com.big_hackathon.backend_v2.DTO.UserDTO;
 import com.big_hackathon.backend_v2.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -64,7 +64,7 @@ public class NativeTokenRefreser implements IJwtRefresher{
         }
         
         // generating the new JWT (refreshed), based on the token bearer's info
-        String refreshedJWT = jwtUtil.generateJWT(tokenOwner.getUserID().toString(), tokenOwner.getEmail(), tokenOwner.getFirstName() + " " + tokenOwner.getLastName());
+        String refreshedJWT = jwtUtil.generateJWT(tokenOwner.getEmail(), tokenOwner.getFirstName() + " " + tokenOwner.getLastName());
         headers.add("Authorization", "Bearer " + refreshedJWT);
         return ResponseEntity.status(HttpStatus.OK).headers(headers).build();
     }

@@ -5,9 +5,7 @@ import com.big_hackathon.backend_v2.model.Apartment;
 import com.big_hackathon.backend_v2.model.User;
 import com.big_hackathon.backend_v2.repo.ApartmentRepo;
 import com.big_hackathon.backend_v2.repo.UserRepo;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -16,8 +14,6 @@ public class ApartmentService {
     private final ApartmentRepo apartmentREPO;
     private final UserRepo userREPO;
     
-
-    @Autowired
     public ApartmentService(ApartmentRepo apartmentREPO, UserRepo userREPO) {
         this.apartmentREPO = apartmentREPO;
         this.userREPO = userREPO;

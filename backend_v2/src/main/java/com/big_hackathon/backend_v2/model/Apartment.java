@@ -36,13 +36,13 @@ public class Apartment {
     private String url;
 
     // //args constructor without the P.K since seq generated
-    // public Apartment(double price, String location, String description, String imageLink, String url){
-    //     this.price = price;
-    //     this.location = location;
-    //     this.description = description;
-    //     this.imageLink = imageLink;
-    //     this.url = url;
-    // }
+    public Apartment(double price, String location, String description, String imageLink, String url){
+        this.price = price;
+        this.location = location;
+        this.description = description;
+        this.imageLink = imageLink;
+        this.url = url;
+    }
 
     public ApartmentDTO useDTO() {
         return new ApartmentDTO(this);

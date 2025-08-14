@@ -36,7 +36,7 @@ public class FormLoginAuthSuccessHandler implements AuthenticationSuccessHandler
 
         if(principal instanceof UserDetails){
             SpringSUser user = (SpringSUser) principal;
-            String jwt = jwtUtil.generateJWT(user.getUserID().toString(), user.getUsername(), user.getFName() + " " + user.getLName());
+            String jwt = jwtUtil.generateJWT(user.getUsername(), user.getFName() + " " + user.getLName());
             ResponseCookie refreshCookie = jwtUtil.generateRefreshTokenAsCookie();
             
             // Issue new refresh token on every login, and set it as active.

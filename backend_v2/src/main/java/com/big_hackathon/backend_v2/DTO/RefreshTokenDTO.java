@@ -14,13 +14,13 @@ import lombok.Setter;
 @Builder
 public class RefreshTokenDTO {
 
-    private long user_id;
+    private String userEmail;
     private String tokenValue;
     private final LocalDateTime expiresAt;
     private boolean isActive;
 
     public RefreshTokenDTO(RefreshToken token){
-        this.user_id = token.getUserID();
+        this.userEmail = token.getUser().getEmail();
         this.tokenValue = token.getTokenValue();
         this.expiresAt = token.getExpiresAt();
         this.isActive = token.isActive();

@@ -1,6 +1,5 @@
 package com.big_hackathon.backend_v2.controller;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Map;
 
@@ -81,7 +80,7 @@ public class AuthController {
 
             headers.add(HttpHeaders.SET_COOKIE, refreshToken.toString());
             
-            String jwt = jwtUtil.generateJWT(user.getUserID().toString(), email, fname + " " + lname);
+            String jwt = jwtUtil.generateJWT(email, fname + " " + lname);
             headers.add("Authorization", "Bearer " + jwt);
 
             // Adding the JWT + refresh token (cookie) into the header of the response on sucessfull registration, like that user can start making API requests.
@@ -116,7 +115,7 @@ public class AuthController {
 
         RefreshToken fetchedToken = null;
         try{
-            fetchedToken = authService.fetchRefreshTokenByUserID(user.getUserID());
+            fetchedToken = authService.fetchRefreshTokenByUserEmail(user.getUser_email());
             
         }catch(BadCredentialsException e){
             logger.error(e.getMessage(), e);

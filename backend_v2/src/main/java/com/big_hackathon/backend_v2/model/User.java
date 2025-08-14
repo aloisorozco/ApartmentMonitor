@@ -17,18 +17,14 @@ import java.util.List;
 public class User {
 
     @Id
-    @Column(name = "user_id")
-    
-    private String userID;
+    @Column(name = "email", unique = true)
+    private String email;
 
     @Column(name = "first_name")
     private String firstName;
 
     @Column(name = "last_name")
     private String lastName;
-
-    @Column(name = "email")
-    private String email;
 
     @Column(name = "authority")
     private String authority;
@@ -41,16 +37,13 @@ public class User {
 
     @PrePersist
     public void generateUser(){
-        if (this.userID==null){
-            this.userID=Hasher.hashData(this.email);
-        }
         this.addedAt = LocalDateTime.now();
     }
 
     //M2M unidirectional
     @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JoinTable(name = "user_watchlist",
-            joinColumns = @JoinColumn(name = "user_id", referencedColumnName = "user_id"),
+            joinColumns = @JoinColumn(name = "email", referencedColumnName = "email"),
             inverseJoinColumns = @JoinColumn(name = "listing_id", referencedColumnName = "listing_id"))
     private List<Apartment> apartments = new ArrayList<>();
 

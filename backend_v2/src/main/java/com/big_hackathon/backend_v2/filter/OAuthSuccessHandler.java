@@ -15,7 +15,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.security.oauth2.jwt.Jwt;
 
 import com.big_hackathon.backend_v2.model.User;
-import com.big_hackathon.backend_v2.repo.UserDAO;
+import com.big_hackathon.backend_v2.repo.UserRepo;
 import com.big_hackathon.backend_v2.service.UserService;
 
 import jakarta.servlet.ServletException;
@@ -26,12 +26,12 @@ import jakarta.servlet.http.HttpServletResponse;
 public class OAuthSuccessHandler implements AuthenticationSuccessHandler{
 
     private final JwtUtil jwtUtil;
-    private final UserDAO userDAO;
+    private final UserRepo userDAO;
     private final UserService userService;
     private final OAuth2AuthorizedClientService authorizedClientService;
 
 
-    OAuthSuccessHandler(JwtUtil jwtUtil, UserDAO userDAO, UserService userService, OAuth2AuthorizedClientService authorizedClientService){
+    OAuthSuccessHandler(JwtUtil jwtUtil, UserRepo userDAO, UserService userService, OAuth2AuthorizedClientService authorizedClientService){
         this.jwtUtil = jwtUtil;
         this.userDAO = userDAO;
         this.userService = userService;

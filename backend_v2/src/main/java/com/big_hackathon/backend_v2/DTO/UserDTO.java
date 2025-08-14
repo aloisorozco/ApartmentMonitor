@@ -31,14 +31,12 @@ public class UserDTO {
 
     @JsonProperty("user_apartment_list")
     private List<ApartmentDTO> user_apartment_list;
-    private Long userID;
     private User user;
 
     public UserDTO(User user){
         this.user_email = user.getEmail();
         this.user_first_name = user.getFirstName();
         this.user_last_name = user.getLastName();
-        this.userID = user.getUserID();
         (user.getApartments()).forEach(apartment -> {
             user_apartment_list.add(apartment.useDTO());
         });

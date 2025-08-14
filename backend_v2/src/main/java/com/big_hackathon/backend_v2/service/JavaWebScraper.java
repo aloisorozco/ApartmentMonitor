@@ -1,7 +1,5 @@
 package com.big_hackathon.backend_v2.service;
 
-
-import com.big_hackathon.backend_v2.DTO.ApartmentDTO;
 import com.big_hackathon.backend_v2.model.Apartment;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;

@@ -9,7 +9,7 @@ import com.big_hackathon.backend_v2.model.User;
 // document = "end point" that contains properties and other documents/collections
 
 @Repository
-public interface UserRepo extends JpaRepository<User, Long> {
+public interface UserRepo extends JpaRepository<User, String> {
     Optional<User> findByEmail(String email);
     boolean existsByEmail(String email);
 }

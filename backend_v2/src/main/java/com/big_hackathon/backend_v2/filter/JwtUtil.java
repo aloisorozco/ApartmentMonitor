@@ -57,9 +57,9 @@ public class JwtUtil {
         this.keyPair = this.keyPairGenerator.generateKeyPair();
     }
 
-    public String generateJWT(String sub, String email, String name){
+    public String generateJWT(String email, String name){
         Map<String, String> payload = Map.of(
-            "sub", sub,
+            "sub", UUID.randomUUID().toString(),
             "email", email,
             "name", name
         );

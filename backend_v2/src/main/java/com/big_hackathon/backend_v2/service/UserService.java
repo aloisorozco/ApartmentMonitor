@@ -2,24 +2,20 @@ package com.big_hackathon.backend_v2.service;
 
 import com.big_hackathon.backend_v2.DTO.UserDTO;
 import com.big_hackathon.backend_v2.DTO.ApartmentDTO;
-import com.big_hackathon.backend_v2.model.Apartment;
 import com.big_hackathon.backend_v2.model.User;
-import com.big_hackathon.backend_v2.repo.UserDAO;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import com.big_hackathon.backend_v2.repo.UserRepo;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 @Service
 public class UserService {
 
-    private final UserDAO userDAO;
+    private final UserRepo userDAO;
     private final PasswordEncoder passwordEncoder;
 
-    public UserService(UserDAO userDAO, PasswordEncoder passwordEncoder){
+    public UserService(UserRepo userDAO, PasswordEncoder passwordEncoder){
         this.userDAO = userDAO;
         this.passwordEncoder = passwordEncoder;
     }
@@ -30,7 +26,7 @@ public class UserService {
 
     public UserDTO getUser(String email) {
 
-        return userREPO.findByEmail(email)
+        return userDAO.findByEmail(email)
                 .map(UserDTO::new)
                 .orElseThrow(() -> new RuntimeException("User not found"));
     }
@@ -49,24 +45,24 @@ public class UserService {
 
     //TODO Test to see if works
     public void updateUser(String email, String password, String fname, String lname) {
-        User user = userREPO.findByEmail(email)
+        User user = userDAO.findByEmail(email)
                             .orElseThrow(() -> new RuntimeException("User not found"));
         
         user.setFirstName(fname);
         user.setLastName(lname);
-        user.setHashedPassword(Hasher.hashData(password));
+        user.setHashedPassword(passwordEncoder.encode(password));
 
-        userREPO.save(user);
+        userDAO.save(user);
     }
 
     public void deleteUser(String email) {
-        userREPO.deleteById(userREPO.findByEmail(email)
+        userDAO.deleteById(userDAO.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"))
-                .getUserID());
+                .getEmail());
     }
 
     public List<ApartmentDTO> getWatchlist(String email) {
-        Optional<User> user = userREPO.findByEmail(email);
+        Optional<User> user = userDAO.findByEmail(email);
         if(user.isPresent()){
             //retrieve the user since it exists
             User u = user.get();
