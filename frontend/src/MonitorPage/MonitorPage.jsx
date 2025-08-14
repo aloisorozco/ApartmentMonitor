@@ -5,25 +5,39 @@ import ApartmentInputComponent from './ApartmentInputComponent';
 import { useAuth } from '../AuthContext';
 
 export default function MonitorPage() {
-  const [apartmentListings, setApartmentListings] = useState([])
+  const [apartmentListings, setApartmentListings] = useState([]);
   const { userEmail } = useAuth()
 
   useEffect(() => {
-    console.log("test")
-      fetch(`http://localhost:8080/api/apartments/fetch_watchlist?email=${userEmail}`, {
-        method: "GET",
-        headers : { 'Content-Type' : 'application/json' },
+    fetch(`http://localhost:5500/db_api/fetch_watchlist?email=${userEmail}`, {
+      method: "GET",
+      headers : { 'Content-Type' : 'application/json'},
+      data : {}
+    })
+    .then(res => res.json())
+    .then(data => {
+      console.log(data)
+      let listings_fetched = data.listings.map((listing) => {
+        return {
+          id: listing.listing_id,
+          title: listing.location,
+          url: listing.url,
+          targetPrice: listing.price_target,
+          currentPrice: listing.price,
+          image: listing.image_link,
+        }
       })
         .then(res => res.json())
         .then(data => {
           let listings_fetched = (data ?? []).map((listing) => {
+            console.log(listing)
             return {
-              id: listing.listingID,
-              title: listing.location,
-              url: listing.url,
-              targetPrice: listing.price_target,
-              currentPrice: listing.price,
-              image: listing.imageLink,
+              id: listing.apartment_id,
+              title: listing.apartment_description,
+              url: listing.apartment_url,
+              targetPrice: null,
+              currentPrice: listing.apartment_price,
+              image: listing.apartment_image_link,
             };
           });
           setApartmentListings([
@@ -40,4 +54,5 @@ export default function MonitorPage() {
       <ApartmentListComponent apartmentListings={apartmentListings} setApartmentListings={setApartmentListings}/>
     </Box>
   );
+})
 }

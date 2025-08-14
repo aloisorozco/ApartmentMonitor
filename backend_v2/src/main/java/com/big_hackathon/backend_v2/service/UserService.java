@@ -1,54 +1,79 @@
 package com.big_hackathon.backend_v2.service;
 
-import com.big_hackathon.backend_v2.model.Hasher;
+import com.big_hackathon.backend_v2.DTO.UserDTO;
+import com.big_hackathon.backend_v2.DTO.ApartmentDTO;
 import com.big_hackathon.backend_v2.model.User;
-import com.big_hackathon.backend_v2.repo.UserDAO;
-import com.google.cloud.firestore.DocumentSnapshot;
-
-import org.springframework.beans.factory.annotation.Autowired;
+import com.big_hackathon.backend_v2.repo.UserRepo;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import java.util.List;
+import java.util.Optional;
 
 @Service
 public class UserService {
 
-    private final UserDAO userDAO;
+    private final UserRepo userDAO;
+    private final PasswordEncoder passwordEncoder;
 
-    @Autowired
-    public UserService(UserDAO userDAO){
+    public UserService(UserRepo userDAO, PasswordEncoder passwordEncoder){
         this.userDAO = userDAO;
+        this.passwordEncoder = passwordEncoder;
     }
 
-    public User getUser(String email) {
-
-        DocumentSnapshot userDoc = userDAO.getUser(email);
-
-        //TODO potential error, variables return null, we need to check for that
-        String fname = userDoc.getString("fname");
-        String lname = userDoc.getString("lname");
-        String password = userDoc.getString("password_hashed");
-        long createdAt = userDoc.getLong("createdAt");
-
-        return User.builder().firstName(fname).lastName(lname).email(email).password_hashed(password).createdAt(createdAt).build();
+    public boolean exists(String email) {
+        return userDAO.existsByEmail(email);
     }
 
-    public String saveUser(String email, String password, String fname, String lname) {
+    public UserDTO getUser(String email) {
 
-        long createAt = System.currentTimeMillis() / 1000L;
-        String passwordHash = Hasher.hashData(password);
-        User newUser = User.builder().email(email).password_hashed(passwordHash).firstName(fname).lastName(lname).createdAt(createAt).build();
-
-        return (userDAO.saveUser(newUser) ? "SUCCESS" : "FAIL");
+        return userDAO.findByEmail(email)
+                .map(UserDTO::new)
+                .orElseThrow(() -> new RuntimeException("User not found"));
     }
 
-    // public String updateUser(Long id) {
-    //     return "TODO - Set up DB Access first";
-    // }
+    public User saveUser(String email, String password, String fname, String lname) {
+        User u = userDAO.save(User
+                .builder()
+                .email(email)
+                .hashedPassword(passwordEncoder.encode(password))
+                .firstName(fname)
+                .lastName(lname)
+                .build());
 
-    public String deleteUser(String id) {
-        return (userDAO.delUser(id) ? "SUCCESS" : "FAIL");
+        return u;
+    }
+
+    //TODO Test to see if works
+    public void updateUser(String email, String password, String fname, String lname) {
+        User user = userDAO.findByEmail(email)
+                            .orElseThrow(() -> new RuntimeException("User not found"));
+        
+        user.setFirstName(fname);
+        user.setLastName(lname);
+        user.setHashedPassword(passwordEncoder.encode(password));
+
+        userDAO.save(user);
+    }
+
+    public void deleteUser(String email) {
+        userDAO.deleteById(userDAO.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"))
+                .getEmail());
+    }
+
+    public List<ApartmentDTO> getWatchlist(String email) {
+        Optional<User> user = userDAO.findByEmail(email);
+        if(user.isPresent()){
+            //retrieve the user since it exists
+            User u = user.get();
+            //return users apartment list as a DTO list
+            return u.getApartments().stream().map(ApartmentDTO::new).toList();
+        }
+        throw new RuntimeException("User not found");
     }
 
     public String authUser(String email, String password) {
-        return (userDAO.authUser(email, password) ? "SUCCESS" : "FAIL");
+//        return (userREPO.authUser(email, password) ? "SUCCESS" : "FAIL");
+        return null;
     }
 }
