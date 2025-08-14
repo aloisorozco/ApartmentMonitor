@@ -21,7 +21,6 @@ public class AuthUserService implements UserDetailsService{
         this.refreshTokenRepo = refreshTokenRepo;
     }
 
-    // TODO: ask nico to make a username field in the db -> username is just a unique key other than the ID.
     @Override
     public SpringSUser loadUserByUsername(String username) throws UsernameNotFoundException {
         User user = userRepo.findByEmail(username).orElseThrow(() -> new UsernameNotFoundException("User with username: " + username + ", not found"));
@@ -67,5 +66,4 @@ public class AuthUserService implements UserDetailsService{
     public void updateRefreshToken(RefreshToken updatedToken) {
         refreshTokenRepo.save(updatedToken);
     }
-    
 }
