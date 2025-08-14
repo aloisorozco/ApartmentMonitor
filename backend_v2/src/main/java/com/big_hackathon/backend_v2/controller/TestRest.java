@@ -10,7 +10,7 @@ public class TestRest {
     
     @GetMapping("/hello")
     public String hello(@AuthenticationPrincipal UserDetails userDetails) {
-        return "This works because daniel is carrying this whole prokect: " + userDetails.getUsername();
+        return "This works because daniel is carrying this whole project: " + userDetails.getUsername();
     }
     
 }

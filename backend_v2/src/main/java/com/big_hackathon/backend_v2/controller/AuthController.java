@@ -55,8 +55,8 @@ public class AuthController {
 
         String email = json.get("email");
         String password = json.get("password");
-        String fname = json.get("fname");
-        String lname = json.get("lname");
+        String fname = json.get("firstName");
+        String lname = json.get("lastName");
         
         if(userService.exists(email)){
             return new ResponseEntity<>("Registration failed - User with credentials already exist", HttpStatus.BAD_REQUEST);
