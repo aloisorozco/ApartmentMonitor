@@ -1,26 +1,54 @@
 package com.big_hackathon.backend_v2.model;
 
+import com.big_hackathon.backend_v2.DTO.UserDTO;
+import jakarta.persistence.*;
 import lombok.*;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
+@Entity
+@Table(name = "users")
 @Getter
 @Setter
-@ToString(exclude = "password_hashed")
-@RequiredArgsConstructor
+@NoArgsConstructor
 @Builder
+@AllArgsConstructor
 public class User {
 
-    @NonNull
-    private String firstName;
-
-    @NonNull
-    private String lastName;
-
-    @NonNull
+    @Id
+    @Column(name = "email", unique = true)
     private String email;
 
-    @NonNull
-    private String password_hashed;
+    @Column(name = "first_name")
+    private String firstName;
+
+    @Column(name = "last_name")
+    private String lastName;
+
+    @Column(name = "authority")
+    private String authority;
+
+    @Column(name = "password_hash")
+    private String hashedPassword;
+
+    @Column(name = "created_at")
+    private LocalDateTime addedAt;
+
+    @PrePersist
+    public void generateUser(){
+        this.addedAt = LocalDateTime.now();
+    }
+
+    //M2M unidirectional
+    @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JoinTable(name = "user_watchlist",
+            joinColumns = @JoinColumn(name = "email", referencedColumnName = "email"),
+            inverseJoinColumns = @JoinColumn(name = "listing_id", referencedColumnName = "listing_id"))
+    private List<Apartment> apartments = new ArrayList<>();
+
     
-    @NonNull
-    private long createdAt;
+    public UserDTO useDTO(){
+        return new UserDTO(this);
+    }
 }
