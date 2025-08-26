@@ -6,6 +6,7 @@ import java.util.List;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.big_hackathon.backend_v2.model.SpringSUser;
@@ -16,6 +17,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 // OncePerRequestFilter = filter guaranteed to execute only once per request
+@Component
 public class JwtValidationFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;

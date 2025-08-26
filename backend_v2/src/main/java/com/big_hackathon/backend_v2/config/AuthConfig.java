@@ -26,9 +26,9 @@ import com.big_hackathon.backend_v2.filter.FormLoginAuthProvider;
 import com.big_hackathon.backend_v2.filter.FormLoginAuthSuccessHandler;
 import com.big_hackathon.backend_v2.filter.JSONUsernamePassowrdAuthenticationFilter;
 import com.big_hackathon.backend_v2.filter.OAuthSuccessHandler;
+import com.big_hackathon.backend_v2.filter.RateLimiter;
 import com.big_hackathon.backend_v2.filter.JwtValidationFilter;
 import com.big_hackathon.backend_v2.service.AuthUserService;
-import com.big_hackathon.backend_v2.filter.JwtUtil;
 
 import lombok.SneakyThrows;
 
@@ -42,9 +42,10 @@ public class AuthConfig {
     SecurityFilterChain defaultSecurityFilterChain(
         HttpSecurity http, 
         OAuthSuccessHandler customSuccessHandler, 
-        JwtUtil jwtUtil, 
+        JwtValidationFilter jwtFilter,
         AuthUserService userService,
-        JSONUsernamePassowrdAuthenticationFilter customUsernamePassowrdAuthenticationFilter){
+        JSONUsernamePassowrdAuthenticationFilter customUsernamePassowrdAuthenticationFilter, 
+        RateLimiter rateLimiterFilter){
         
         // Setting up CSRF + Form base login
         http.csrf(csrf -> csrf.disable())
@@ -56,12 +57,15 @@ public class AuthConfig {
 
             }).sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
         
-        // Adding the custom json form login filter∂
+        // Adding the custom json form login filter
         http.addFilterAt(customUsernamePassowrdAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         
         // Setting up the custom JWT validation filter so that all API calls are validated
-        http.addFilterBefore(new JwtValidationFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class);
+        http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
         
+        // Adding the Rate Limiter filter
+        http.addFilterBefore(rateLimiterFilter, JwtValidationFilter.class);
+
         // Setting up OAuth filters
         http.oauth2Login(oauth -> oauth.successHandler(customSuccessHandler)); // OAuth loggin w/appropriate success handler
 
