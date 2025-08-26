@@ -61,12 +61,12 @@ public class RateLimiter extends OncePerRequestFilter{
             if(numOfRequests >= API_LIMIT){
                 rateLimited = true;
             }else{
-                instance.zadd(userkeyspace, timeOfRequest, "");
+                instance.zadd(userkeyspace, timeOfRequest, Long.toString(timeOfRequest));
                 rateLimited = false;
             }
 
         }else{
-            instance.zadd(userkeyspace, timeOfRequest, "");
+            instance.zadd(userkeyspace, timeOfRequest,  Long.toString(timeOfRequest));
             instance.pexpire(userkeyspace, USER_CACHE_TTL);
             rateLimited = false;
         }
