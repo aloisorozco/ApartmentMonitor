@@ -9,7 +9,7 @@ You can then move these to the proper folder for use in application.properties (
 For example:
 openssl req -x509 -newkey rsa:4096 -nodes -keyout vault.key -out vault.crt -days 365 -addext "subjectAltName=DNS:localhost,IP:127.0.0.1"
 
-openssl pkcs12 -export -in vault.crt -out vault-truststore.p12 -name vault -nokeys -passout pass:TrustStorePass
+You can then use an application like portecle or keytool to make a JKS file using the vault's certification.
 
 Step 1:
 Open a terminal from the vault folder and run:
@@ -78,4 +78,8 @@ vault read auth/approle/role/spring-role/role-id
 vault write -f auth/approle/role/spring-role/secret-id
 
 Closing Notes:
-The root credentials are used and stored in the vault. The vault then manages creating tem porary users with limited access. Currenty, the vault is used unsealed and with the root token coded in. This is bad practice. When we move to kubernetes clusters, we will replace the root token with application tokens.
+The root credentials are used and stored in the vault. The db-role is initially authenticated with these credentials. The db-role then manages creating temporary users with the spring-role with limited access to the database.
+
+After doing the steps above, the vault is used unsealed. Upon closing the vault server, the vault is re-sealed. Sealing the vault is to encrypt it and make sure the data is secure at rest. The vault server upon being launched needs to be unsealed before it can be interacted with.
+
+Currently, we are authenticating with approle and using these credentials hard coded in our application.properties. This is not good practice. When we containerize our application, we will use docker roles for interacting with the vault.
