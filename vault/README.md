@@ -2,14 +2,17 @@ How to set up the vault!
 
 
 Preamble:
-Obtain a certificate and RSA key pair (For developmnet purposes, you can use openssl to generate these 2 files).
-Move the certificate and key under the certs folder and have them names as \certs\vault.crt and certs\vault.key.
-You can then move these to the proper folder for use in application.properties (src/main/resources/ssl/).
 
+Install hashicorp vault and add it to path. (I used version 1.20.2)
+
+Obtain a certificate and RSA key pair (For development purposes, you can use openssl to generate these 2 files).
 For example:
 openssl req -x509 -newkey rsa:4096 -nodes -keyout vault.key -out vault.crt -days 365 -addext "subjectAltName=DNS:localhost,IP:127.0.0.1"
 
-You can then use an application like portecle or keytool to make a JKS file using the vault's certification.
+Move the certificate and key under the certs folder and have them names as \certs\vault.crt and certs\vault.key.
+
+You can then use an application like portecle or keytool to make a JKS file using the vault's certification. You can then move this to the proper folder for use in application.properties (src/main/resources/ssl/).
+
 
 Step 1:
 Open a terminal from the vault folder and run:
