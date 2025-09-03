@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.ProviderManager;
@@ -26,7 +27,6 @@ import com.big_hackathon.backend_v2.filter.FormLoginAuthProvider;
 import com.big_hackathon.backend_v2.filter.FormLoginAuthSuccessHandler;
 import com.big_hackathon.backend_v2.filter.JSONUsernamePassowrdAuthenticationFilter;
 import com.big_hackathon.backend_v2.filter.OAuthSuccessHandler;
-import com.big_hackathon.backend_v2.filter.RateLimiter;
 import com.big_hackathon.backend_v2.filter.JwtValidationFilter;
 import com.big_hackathon.backend_v2.service.AuthUserService;
 
@@ -35,6 +35,7 @@ import lombok.SneakyThrows;
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
+@EnableAspectJAutoProxy
 public class AuthConfig {
 
     @Bean
@@ -44,8 +45,7 @@ public class AuthConfig {
         OAuthSuccessHandler customSuccessHandler, 
         JwtValidationFilter jwtFilter,
         AuthUserService userService,
-        JSONUsernamePassowrdAuthenticationFilter customUsernamePassowrdAuthenticationFilter, 
-        RateLimiter rateLimiterFilter){
+        JSONUsernamePassowrdAuthenticationFilter customUsernamePassowrdAuthenticationFilter){
         
         // Setting up CSRF + Form base login
         http.csrf(csrf -> csrf.disable())
@@ -62,9 +62,6 @@ public class AuthConfig {
         
         // Setting up the custom JWT validation filter so that all API calls are validated
         http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
-        
-        // Adding the Rate Limiter filter
-        http.addFilterBefore(rateLimiterFilter, JwtValidationFilter.class);
 
         // Setting up OAuth filters
         http.oauth2Login(oauth -> oauth.successHandler(customSuccessHandler)); // OAuth loggin w/appropriate success handler

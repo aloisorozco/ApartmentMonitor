@@ -3,20 +3,25 @@ package com.big_hackathon.backend_v2.filter;
 import java.io.IOException;
 import java.time.Instant;
 
+import org.aspectj.lang.ProceedingJoinPoint;
+import org.aspectj.lang.annotation.Around;
+import org.aspectj.lang.annotation.Aspect;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
-import org.springframework.web.filter.OncePerRequestFilter;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import com.big_hackathon.backend_v2.repo.RedisDAO;
 
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+import lombok.SneakyThrows;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Pipeline;
 
+@Aspect
 @Component
-public class RateLimiter extends OncePerRequestFilter{
+public class RateLimiter{
 
     private RedisDAO redisDAO;
 
@@ -28,24 +33,27 @@ public class RateLimiter extends OncePerRequestFilter{
         this.redisDAO = redisDAO;
     }
 
-    @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-
-        String usrIP = request.getRemoteAddr();
-
-        if(isRateLimited(usrIP, Instant.now().toEpochMilli())){
-            response.sendError(429, "wooooow, you are making way to many request bozo - wait a sec and make the request again.");
-            return;
-        }
-
-        filterChain.doFilter(request, response);
-    }
-
     // We are using a sorted set to store the timestamps -> the main reason is just so we can use the zremrangeByScore function in Redis to delete the range of itmes at once
     // this batch opp is more efficient that doing 'n' read requests to a Redis list to find the index of the element up to where we need to trim.
     // Using a Lua script is an option to keep in mind -> overkill for now.
-    boolean isRateLimited(String userID, long timeOfRequest){
+    @SneakyThrows
+    @Around("@annotation(RateLimited)")
+    public Object rateLimitting(ProceedingJoinPoint jp){
 
+        ServletRequestAttributes attrs = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+        HttpServletRequest request = attrs.getRequest();
+        String userID = request.getRemoteAddr();
+        long timeOfRequest = Instant.now().toEpochMilli();
+
+        if(isRateLimittedSlidingWindow(userID, timeOfRequest)){
+            return new ResponseEntity<>("wooooow, you are making way to many request bozo - wait a sec and make the request again", HttpStatus.TOO_MANY_REQUESTS);
+        }
+
+        // Will re-throw whatever error the intercepted method threw
+        return jp.proceed();
+    }
+
+    private boolean isRateLimittedSlidingWindow(String userID, long timeOfRequest){
         boolean rateLimited = false;
         String userkeyspace = REDIS_KEYSPACE + ":" + userID;
 
