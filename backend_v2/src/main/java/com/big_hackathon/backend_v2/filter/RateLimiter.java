@@ -1,7 +1,15 @@
 package com.big_hackathon.backend_v2.filter;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.time.Instant;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -29,8 +37,16 @@ public class RateLimiter{
     private final int API_LIMIT = 5; // TODO: Change to more requests later on, for not 2 for testing.
     private final String REDIS_KEYSPACE = "rate_limiter";
 
-    RateLimiter(RedisDAO redisDAO){
+    private final String LUA_SLIDING_WINDOW_SCRIPT;
+
+    RateLimiter(RedisDAO redisDAO) throws IOException{
         this.redisDAO = redisDAO;
+
+        InputStream is = getClass().getResourceAsStream("SlidingWindow.lua"); // same package
+        if (is == null) {
+            throw new FileNotFoundException("Lua script not found in classpath: SlidingWindow.lua");
+        }
+        LUA_SLIDING_WINDOW_SCRIPT = new String(is.readAllBytes(), StandardCharsets.UTF_8);
     }
 
     // We are using a sorted set to store the timestamps -> the main reason is just so we can use the zremrangeByScore function in Redis to delete the range of itmes at once
@@ -45,50 +61,19 @@ public class RateLimiter{
         String userID = request.getRemoteAddr();
         long timeOfRequest = Instant.now().toEpochMilli();
 
-        if(isRateLimittedSlidingWindow(userID, timeOfRequest)){
+        Jedis instance = redisDAO.getJedisInstance();
+        String userkeyspace = REDIS_KEYSPACE + ":" + userID;
+
+        Object res = instance.eval(LUA_SLIDING_WINDOW_SCRIPT, Arrays.asList(userkeyspace), Arrays.asList(String.valueOf(timeOfRequest), String.valueOf(USER_CACHE_TTL), String.valueOf(API_LIMIT)));
+        instance.close();
+
+        boolean isLimited = (Long) res == 1 ? true : false;
+        
+        if(isLimited){
             return new ResponseEntity<>("wooooow, you are making way to many request bozo - wait a sec and make the request again", HttpStatus.TOO_MANY_REQUESTS);
         }
 
         // Will re-throw whatever error the intercepted method threw
         return jp.proceed();
     }
-
-    private boolean isRateLimittedSlidingWindow(String userID, long timeOfRequest){
-        boolean rateLimited = false;
-        String userkeyspace = REDIS_KEYSPACE + ":" + userID;
-
-        Jedis instance = redisDAO.getJedisInstance();
-        // System.out.println("[LOG] Servicing request from " + userID);
-
-        // Update user's key with a fresh TTL if exist.
-        boolean userExistsAndUpdatedTTL = instance.pexpire(userkeyspace, USER_CACHE_TTL) == 1 ? true : false;
-        
-        if(userExistsAndUpdatedTTL){
-            long cutoff = timeOfRequest - USER_CACHE_TTL;
-            instance.zremrangeByScore(userkeyspace, 0, cutoff);
-            
-            long numOfRequests = instance.zcard(userkeyspace);
-            
-            if(numOfRequests >= API_LIMIT){
-                rateLimited = true;
-            }else{
-                instance.zadd(userkeyspace, timeOfRequest, Long.toString(timeOfRequest));
-                rateLimited = false;
-            }
-
-        }else{
-            Pipeline cmdPipeline = instance.pipelined();
-            cmdPipeline.zadd(userkeyspace, timeOfRequest,  Long.toString(timeOfRequest));
-            cmdPipeline.pexpire(userkeyspace, USER_CACHE_TTL);
-            rateLimited = false;
-
-            // Sync the pipelined commands with Redis -> execute them all at once to avoid redundat RTTs (since we do not need the response of each cmd right away anyways).
-            cmdPipeline.sync();
-        }
-
-        // return thread to the pool
-        instance.close();
-        return rateLimited;
-    }
-    
 }
