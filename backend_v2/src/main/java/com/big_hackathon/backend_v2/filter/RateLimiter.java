@@ -4,12 +4,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.time.Instant;
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
 
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -25,7 +21,6 @@ import com.big_hackathon.backend_v2.repo.RedisDAO;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.SneakyThrows;
 import redis.clients.jedis.Jedis;
-import redis.clients.jedis.Pipeline;
 
 @Aspect
 @Component
@@ -42,7 +37,7 @@ public class RateLimiter{
     RateLimiter(RedisDAO redisDAO) throws IOException{
         this.redisDAO = redisDAO;
 
-        InputStream is = getClass().getResourceAsStream("SlidingWindow.lua"); // same package
+        InputStream is = getClass().getResourceAsStream("SlidingWindow.lua");
         if (is == null) {
             throw new FileNotFoundException("Lua script not found in classpath: SlidingWindow.lua");
         }
