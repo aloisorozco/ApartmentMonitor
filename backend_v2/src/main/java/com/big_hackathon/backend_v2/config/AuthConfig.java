@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.ProviderManager;
@@ -35,6 +36,7 @@ import lombok.SneakyThrows;
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
+@EnableAspectJAutoProxy
 public class AuthConfig {
 
     @Bean
